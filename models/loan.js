@@ -4,7 +4,7 @@ const moment = require('moment')
 const { default: mongoose } = require('mongoose')
 
 const loanSchema = new mongoose.Schema({
-    customer:{
+    agent:{
         type : new mongoose.Schema({
             name:{
                 type: String,
@@ -29,7 +29,7 @@ const loanSchema = new mongoose.Schema({
                 minlength : 4,
                 maxlength : 50
             },
-            monthlyLoanFee:{
+            dailyLoanFee:{
                 type : Number,
                 required: true,
                 min: 0,
@@ -52,10 +52,31 @@ const loanSchema = new mongoose.Schema({
     }
 });
 
-loanSchema.statics.lookup = function(customerID, playerId){
+loanSchema.statics.lookup = function(agentId, playerId){
     return this.findOne({
-        'customer._id': customerID,
+        'agent._id': agentId,
         'player._id': playerId
     });
 }
+
+loanSchema.methods.return = function(){
+    this.dateReturned = new Date();
+    const duration = moment.diff(this.loanDate, 'days');
+    this.loanFee = duration*this.player.dailyLoanFee;
+}
+
+const Loan = mongoose.model('Loan', loanSchema);
+
+function validateLoan(loan){
+
+    const schema = {
+        agentId: Joi.objectId().required(),
+        playerId: Joi.objectId().required()
+    } 
+    return Joi.validate(loan, schema);
+}
+
+module.exports = Loan;
+module.exports = validateLoan;
+
 
