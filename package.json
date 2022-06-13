@@ -18,8 +18,10 @@
   },
   "homepage": "https://github.com/rajeshceg3/premier_league#readme",
   "dependencies": {
+    "config": "^3.3.7",
     "express": "^4.18.1",
     "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.3",
     "mongoose": "^6.3.6"
   }
