@@ -11,8 +11,29 @@ router.get("/", async (req, res) =>{
         .select("-__v")
         .sort("name");
     
-        res.send(players);
+    res.send(players);
+});
 
+router.post("/", async (req,res) => {
+    const { error } =  validatePlayer(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+   const team = await Team.findById(req.body.teamId);
+   if (!team) return res.status(400).send("Team name is not valid"); 
+
+   const player = new Player({
+    name : req.body.name,
+    team : {
+        _id : team._id,
+        name : team.name
+    },
+    playerCount : req.body.playerCount,
+    loanCost : req.body.loanCost,
+    timeStamp : moment.toJSON()
+   });
+   
+   await player.save();
+   res.send(player);
 })
 
 
