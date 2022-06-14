@@ -36,4 +36,31 @@ router.post("/", async (req,res) => {
    res.send(player);
 })
 
+router.put("/:id", (req, res) => {
+    const {error} = validatePlayer(req.body);
+    if( error ) return res.status(400).send(error.details[0].message);
+
+    const team = Team.findById(req.body.teamId);
+    if (!team) return res.status(400).send("Invalid Team details provided");
+
+    const player = await Player.findByIdAndUpdate(
+        req.params.id,
+        {
+            name : req.body.name,
+            team : {
+                _id  : team._id,
+                name : team.name,
+            },
+            playerCount : req.body.playerCount,
+            loanCost : req.body.loanCost
+        },
+        {
+            new:true
+        }
+
+    );
+    
+    if (!player) return res.status(404).send("Player ID not found")
+    res.send(player);
+})
 
