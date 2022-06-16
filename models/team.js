@@ -19,8 +19,8 @@ function validateTeam(team){
     return Joi.validate(team, schema);
 }
 
-module.exports = Team
-module.exports = validateTeam
+module.exports = Team;
+module.exports = validateTeam;
 
 
 

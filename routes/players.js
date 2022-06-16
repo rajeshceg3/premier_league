@@ -36,7 +36,7 @@ router.post("/", async (req,res) => {
    res.send(player);
 })
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
     const {error} = validatePlayer(req.body);
     if( error ) return res.status(400).send(error.details[0].message);
 
@@ -63,4 +63,18 @@ router.put("/:id", (req, res) => {
     if (!player) return res.status(404).send("Player ID not found")
     res.send(player);
 })
+
+router.delete("/:id", async ( req, res )=>{
+    const player = await Player.findByIdAndRemove(req.params.id);
+    if (!player) return res.status(404).send("Player ID not found");
+    res.send(player);
+})
+
+router.get("/:id", async (req,res)=>{
+    const player = await Player.findById(req.params.id);
+    if (!player) return res.status(404).send("await Player ID not found");
+    res.send(player);
+})
+
+module.exports = router;
 
