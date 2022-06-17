@@ -14,7 +14,7 @@ const playerSchema =  new mongoose.Schema({
         type: teamSchema,
         required: true
     },
-    playerCount:{
+    loanDaysRemaining:{
         type: Number,
         required: true,
         min : 0,
@@ -34,7 +34,7 @@ function validatePlayer(player){
     const schema = {
         name : Joi.String().min(4).max(50).required(),
         team : Joi.objectId().required(),
-        playerCount: Joi.number().min(0).required(),
+        loanDaysRemaining: Joi.number().min(0).required(),
         loanCost: Joi.number().min(0).required()
     }
     return Joi.validate(player, schema);

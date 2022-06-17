@@ -1,7 +1,6 @@
 const Joi = require('joi')
-const moongoose = require('mongoose')
-const moment = require('moment')
-const { default: mongoose } = require('mongoose')
+const mongoose = require('mongoose');
+const moment = require('moment');
 
 const loanSchema = new mongoose.Schema({
     agent:{
