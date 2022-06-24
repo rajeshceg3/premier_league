@@ -40,7 +40,31 @@ router.post("/", async (req, res)=>{
             name : player.name,
             dailyLoanFee: player.dailyLoanFee
         }
-    })
+    });
 
-
+    try{
+        new Fawn.Task()
+            .save("loans", loan )
+            .update("players",
+            {
+                _id : player._id
+            },
+            {
+                $inc : { loanDaysRemaining : -1 }
+            }
+            )
+            .run();
+        res.send(loan);
+    }
+    catch(ex){
+        res.status(500).send("Operation Didn't succeed");
+    }
 })
+
+router.get("/:id", async(req,res)=>{
+   const loan = await Loan.findById(req.params.id).select("-__v");
+   if(!loan) res.status(404).send("Player with given id not found");
+   res.send(loan);
+})
+
+module.exports = router;
