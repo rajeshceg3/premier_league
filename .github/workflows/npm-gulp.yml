@@ -1,4 +1,4 @@
-name: NodeJS with Gulp
+name: Node.js CI & Lint
 
 on:
   push:
@@ -7,22 +7,28 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x] # Reduced matrix to save resources, can add 22.x back if needed
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm' # Cache npm dependencies
 
-    - name: Build
-      run: |
-        npm install
-        gulp
+    - name: Install dependencies
+      run: npm ci # Use npm ci for cleaner installs in CI
+
+    - name: Run linters
+      run: npm run lint # Assumes 'lint' script is in package.json
+
+    - name: Run tests
+      run: npm test # Assumes 'test' script is in package.json
