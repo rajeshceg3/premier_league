@@ -7,7 +7,7 @@ const express = require('express')
 const router = express.Router()
 
 router.get("/", async (req, res) =>{
-    const players = await Movie.find()
+    const players = await Player.find()
         .select("-__v")
         .sort("name");
     

@@ -1,3 +1,4 @@
 {
-    "jwtPrivateKey" : "premier_league_jwt_privateKey"
+    "jwtPrivateKey" : "premier_league_jwt_privateKey",
+    "db": "PREMIER_LEAGUE_DB"
 }
