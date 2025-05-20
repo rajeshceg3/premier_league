@@ -26,14 +26,12 @@ const userSchema = new mongoose.Schema({
     isAdmin: Boolean
 });
 
-const User = mongoose.model('User', userSchema);
-
 userSchema.methods.createAuthToken = function (){
     const token = jwt.sign(
     {
         _id: this._id,
-        name: this._name,
-        email: this._email,
+        name: this.name, // Corrected: this._name to this.name
+        email: this.email, // Corrected: this._email to this.email
         isAdmin: this.isAdmin
     },
     config.get("jwtPrivateKey")
@@ -41,14 +39,16 @@ userSchema.methods.createAuthToken = function (){
     return token;
 };
 
+const User = mongoose.model('User', userSchema);
+
 function validateUser(user){
-    const schema = {
+    const schema = Joi.object({ // Changed to Joi.object for modern Joi
         name: Joi.string().min(4).max(255).required(),
-        email : Joi.string().min(6).max(255).required(),
+        email : Joi.string().min(6).max(255).email().required(), // Added .email() validation
         password : Joi.string().min(8).max(255).required()
-    }
-    return Joi.validate(user, schema);
+    });
+    return schema.validate(user); // Changed to modern Joi validation
 }
 
-module.exports = User;
-module.exports = validateUser;
+module.exports.User = User;
+module.exports.validateUser = validateUser;

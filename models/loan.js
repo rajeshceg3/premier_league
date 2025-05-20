@@ -59,23 +59,23 @@ loanSchema.statics.lookup = function(agentId, playerId){
 }
 
 loanSchema.methods.return = function(){
-    this.dateReturned = new Date();
-    const duration = moment.diff(this.loanDate, 'days');
-    this.loanFee = duration*this.player.dailyLoanFee;
+    this.ReturnDate = new Date(); // Corrected to match schema: ReturnDate
+    const duration = moment().diff(this.loanDate, 'days'); // Calculate duration until now
+    this.loanFee = duration * this.player.dailyLoanFee;
 }
 
 const Loan = mongoose.model('Loan', loanSchema);
 
 function validateLoan(loan){
-
-    const schema = {
-        agentId: Joi.objectId().required(),
-        playerId: Joi.objectId().required()
-    } 
-    return Joi.validate(loan, schema);
+    const JoiObjectId = require('joi-objectid')(Joi); // Initialize joi-objectid
+    const schema = Joi.object({ // Use Joi.object() for modern Joi
+        agentId: JoiObjectId().required(), // Use JoiObjectId for validation
+        playerId: JoiObjectId().required()
+    });
+    return schema.validate(loan); // Use schema.validate()
 }
 
-module.exports = Loan;
-module.exports = validateLoan;
+module.exports.Loan = Loan;
+module.exports.validateLoan = validateLoan;
 
 

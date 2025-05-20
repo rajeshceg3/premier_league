@@ -1,12 +1,11 @@
-import { Loan, validateLoan } from '../models/loan';
-import { Player } from '../models/player';
-import { Agent } from '../models/agent';
-import mongoose from 'mongoose';
-import { Router } from 'express';
-import Fawn from 'fawn';
-const router = Router();
+const { Loan, validateLoan } = require('../models/loan');
+const { Player } = require('../models/player');
+const { Agent } = require('../models/agent'); // Corrected: Agent is a property of the exported object
+const mongoose = require('mongoose');
+const router = require('express').Router();
+const Fawn = require('fawn');
 
-Fawn.init(mongoose)
+Fawn.init(mongoose); // Added semicolon for consistency
 
 router.get("/", async ( req, res)=>{
     const loan = await Loan.find()
