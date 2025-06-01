@@ -10,6 +10,20 @@ const playerSchema = new mongoose.Schema({
     minlength: 4,
     maxlength: 50,
   },
+  apiFootballId: {
+    type: Number,
+    unique: true,
+    sparse: true, // Allows multiple documents to have a null value for this field
+  },
+  statistics: {
+    type: Object,
+  },
+  dateOfBirth: {
+    type: Date,
+  },
+  nationality: {
+    type: String,
+  },
   team: {
     type: teamSchema,
     required: true,
