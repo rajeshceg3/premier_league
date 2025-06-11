@@ -1,0 +1,306 @@
+/* App.css */
+
+/* Main App Container */
+.App {
+  text-align: center;
+}
+
+/* Navigation Bar Styling */
+nav {
+  background-color: #282c34;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-around; /* Distributes space around links */
+  align-items: center;
+  border-bottom: 2px solid #61dafb;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+nav ul li {
+  margin-right: 20px; /* Spacing between nav items */
+}
+
+nav ul li:last-child {
+  margin-right: 0;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1em;
+  padding: 8px 15px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+nav a:hover, nav a.active {
+  background-color: #61dafb;
+  color: #282c34;
+}
+
+/* Main Content Area */
+/* Add a class to the main content div in App.js if needed, e.g., <div className="main-content"> */
+.main-content { /* Assuming you'll wrap <Routes> in a div with this class in App.js */
+  padding: 20px;
+  flex-grow: 1; /* Allows content to take up available space */
+  background-color: #ffffff;
+  margin: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+
+/* Headings */
+h2 {
+  font-size: 1.8em;
+  color: #333;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+/* Form Styling */
+form {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  max-width: 500px; /* Limit form width */
+  margin: 20px auto; /* Center forms */
+}
+
+form div {
+  margin-bottom: 15px;
+}
+
+form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="number"],
+form input[type="date"],
+form select {
+  width: calc(100% - 22px); /* Full width minus padding and border */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+form input:focus, form select:focus {
+  border-color: #61dafb;
+  outline: none;
+  box-shadow: 0 0 5px rgba(97, 218, 251, 0.5);
+}
+
+/* Button Styling */
+button,
+a.button-link { /* For link styled as button */
+  background-color: #61dafb; /* React blue */
+  color: #282c34; /* Dark text */
+  border: none;
+  padding: 10px 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-decoration: none; /* For <a> tags */
+  display: inline-block; /* For <a> tags */
+  margin-top: 10px;
+}
+
+button:hover,
+a.button-link:hover {
+  background-color: #21a1f1; /* Darker blue */
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Specifically for form buttons */
+form button[type="submit"] {
+  background-color: #28a745; /* Green for submit */
+  color: white;
+}
+form button[type="submit"]:hover {
+  background-color: #218838; /* Darker green */
+}
+form button[type="button"] { /* Cancel buttons */
+  background-color: #6c757d; /* Gray for cancel */
+  color: white;
+  margin-left: 10px;
+}
+form button[type="button"]:hover {
+  background-color: #5a6268; /* Darker gray */
+}
+
+
+/* Table Styling */
+table {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2; /* Light grey header */
+  font-weight: bold;
+  color: #333;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9; /* Zebra striping for rows */
+}
+
+tr:hover {
+  background-color: #f1f1f1; /* Hover effect for rows */
+}
+
+td button, td a {
+  margin-right: 5px;
+  padding: 6px 12px; /* Smaller padding for buttons in tables */
+  font-size: 0.9em;
+}
+td button:last-child, td a:last-child {
+  margin-right: 0;
+}
+
+
+/* Error and Message Styling */
+p[style*="color: red"] { /* Targets inline styled error messages */
+  color: #D8000C !important; /* Important to override inline style if necessary */
+  background-color: #FFD2D2;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  border: 1px solid #D8000C;
+}
+
+p[style*="color: green"] { /* Targets inline styled success messages */
+  color: #4F8A10 !important;
+  background-color: #DFF2BF;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  border: 1px solid #4F8A10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+  }
+  nav ul {
+    flex-direction: column;
+    width: 100%;
+    align-items: center; /* Center items in column nav */
+  }
+  nav ul li {
+    margin-right: 0;
+    margin-bottom: 10px; /* Spacing for vertical items */
+    width: 100%;
+    text-align: center;
+  }
+  nav ul li:last-child {
+    margin-bottom: 0;
+  }
+  nav a {
+    display: block; /* Make links take full width */
+  }
+
+  form {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  /* Make tables scrollable on small screens */
+  table, thead, tbody, th, td, tr {
+		display: block;
+	}
+
+	thead tr {
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+	}
+
+	tr { border: 1px solid #ccc; margin-bottom: 5px; }
+
+	td {
+		border: none;
+		border-bottom: 1px solid #eee;
+		position: relative;
+		padding-left: 50%; /* Space for data label */
+    white-space: normal;
+    text-align: right; /* Align content to the right */
+	}
+
+	td:before {
+		position: absolute;
+		top: 6px;
+		left: 6px;
+		width: 45%;
+		padding-right: 10px;
+		white-space: nowrap;
+    text-align: left; /* Align label to the left */
+    font-weight: bold;
+	}
+
+  /* Label table cells */
+  /* This requires knowing the headers. Adjust if your tables change. */
+  /* For PlayerList */
+  table td:nth-of-type(1):before { content: "Name"; }
+  table td:nth-of-type(2):before { content: "Position"; }
+  table td:nth-of-type(3):before { content: "Jersey Nr"; }
+  table td:nth-of-type(4):before { content: "Actions"; }
+  /* For TeamList */
+  /* Example: if TeamList has Name, Coach, Actions */
+  /* table td:nth-of-type(1):before { content: "Team Name"; } */
+  /* table td:nth-of-type(2):before { content: "Coach"; } */
+  /* table td:nth-of-type(3):before { content: "Actions"; } */
+  /* Similar for AgentList and LoanList - this part needs careful implementation
+     based on the actual and consistent order of columns in each table.
+     A more robust solution would involve JS or different component structure for mobile tables.
+  */
+}
+
+/* Dashboard specific styling */
+.dashboard-welcome {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
+
+/* Link component styling if it needs to be different from nav a */
+.Link {
+  color: #61dafb;
+  text-decoration: none;
+}
+
+.Link:hover {
+  text-decoration: underline;
+}
