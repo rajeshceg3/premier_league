@@ -2,17 +2,31 @@
 
 /* Main App Container */
 .App {
-  text-align: center;
+  display: flex; /* Use flexbox for sidebar layout */
+  min-height: 100vh; /* Ensure app takes full viewport height */
 }
 
-/* Navigation Bar Styling */
+/* Sidebar Navigation Styling */
 nav {
-  background-color: #282c34;
-  padding: 15px 30px;
+  width: 250px; /* Fixed width for the sidebar */
+  background-color: #3498db; /* Primary color */
+  padding: 20px 0; /* Padding top/bottom, no horizontal padding for full-width links */
+  height: 100vh; /* Full viewport height */
   display: flex;
-  justify-content: space-around; /* Distributes space around links */
-  align-items: center;
-  border-bottom: 2px solid #61dafb;
+  flex-direction: column;
+  color: #ffffff;
+  position: fixed; /* Fixed position */
+  top: 0;
+  left: 0;
+  overflow-y: auto; /* Scroll if content overflows */
+}
+
+.app-logo {
+  font-size: 1.5em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 0 15px; /* Add some horizontal padding for the logo text */
 }
 
 nav ul {
@@ -20,48 +34,71 @@ nav ul {
   padding: 0;
   margin: 0;
   display: flex;
+  flex-direction: column; /* Stack links vertically */
 }
 
 nav ul li {
-  margin-right: 20px; /* Spacing between nav items */
+  /* margin-right removed, not needed for vertical layout */
 }
 
 nav ul li:last-child {
-  margin-right: 0;
+  /* margin-right: 0; removed */
 }
 
 nav a {
-  color: white;
+  color: #ffffff; /* White text for contrast */
   text-decoration: none;
   font-size: 1.1em;
-  padding: 8px 15px;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
+  padding: 12px 20px; /* Adjusted padding for vertical links */
+  display: block; /* Make links full-width */
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+  display: flex; /* For icon alignment */
+  align-items: center; /* For icon alignment */
+}
+
+nav a i {
+  margin-right: 8px; /* Space between icon and text */
+  width: 20px; /* Fixed width for icon container for alignment */
+  text-align: center; /* Center icon within its container */
 }
 
 nav a:hover, nav a.active {
-  background-color: #61dafb;
-  color: #282c34;
+  background-color: #2ecc71; /* Secondary color */
+  color: #ffffff; /* White text for contrast */
+  transform: translateX(3px); /* Subtle pop-out effect */
+}
+
+nav a:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: -3px; /* Adjust to bring outline slightly inwards or on the edge */
+  /* Alternatively, a box-shadow can work well: */
+  /* box-shadow: 0 0 0 2px #ffffff inset; */
 }
 
 /* Main Content Area */
-/* Add a class to the main content div in App.js if needed, e.g., <div className="main-content"> */
-.main-content { /* Assuming you'll wrap <Routes> in a div with this class in App.js */
-  padding: 20px;
-  flex-grow: 1; /* Allows content to take up available space */
-  background-color: #ffffff;
-  margin: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.main-content {
+  flex-grow: 1; /* Takes remaining space */
+  padding: 25px;
+  margin-left: 250px; /* Offset by sidebar width */
+  background-color: #ecf0f1; /* Use the general background color */
+  animation: fadeIn 0.5s ease-in-out forwards;
+  /* Removed fixed margin, border-radius, box-shadow from previous style */
+  /* overflow-y: auto; /* If content might exceed viewport height and needs its own scroll */
 }
 
 
 /* Headings */
 h2 {
+  font-family: 'Montserrat', sans-serif;
   font-size: 1.8em;
-  color: #333;
+  color: #34495e; /* Text color */
   margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #bdc3c7; /* Lighter gray for border */
   padding-bottom: 10px;
 }
 
@@ -81,9 +118,10 @@ form div {
 
 form label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #555;
+  margin-bottom: 8px; /* Increased margin */
+  font-family: 'Montserrat', sans-serif; /* Use Montserrat for labels */
+  font-weight: 600; /* Slightly bolder */
+  color: #34495e; /* Text color */
 }
 
 form input[type="text"],
@@ -92,31 +130,33 @@ form input[type="password"],
 form input[type="number"],
 form input[type="date"],
 form select {
-  width: calc(100% - 22px); /* Full width minus padding and border */
-  padding: 10px;
-  border: 1px solid #ccc;
+  width: calc(100% - 26px); /* Adjusted for 12px padding + 1px border each side */
+  padding: 12px; /* Increased padding */
+  border: 1px solid #bdc3c7; /* Consistent light gray border */
   border-radius: 4px;
+  font-family: 'Open Sans', sans-serif; /* Ensure Open Sans */
   font-size: 1em;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition for focus */
 }
 
 form input:focus, form select:focus {
-  border-color: #61dafb;
+  border-color: #3498db; /* Primary color */
   outline: none;
-  box-shadow: 0 0 5px rgba(97, 218, 251, 0.5);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25); /* Softer glow effect */
 }
 
 /* Button Styling */
 button,
 a.button-link { /* For link styled as button */
-  background-color: #61dafb; /* React blue */
-  color: #282c34; /* Dark text */
+  background-color: #3498db; /* Primary color */
+  color: #ffffff; /* White text */
   border: none;
   padding: 10px 20px;
   font-size: 1em;
   font-weight: bold;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; /* Added box-shadow transition */
   text-decoration: none; /* For <a> tags */
   display: inline-block; /* For <a> tags */
   margin-top: 10px;
@@ -124,8 +164,16 @@ a.button-link { /* For link styled as button */
 
 button:hover,
 a.button-link:hover {
-  background-color: #21a1f1; /* Darker blue */
-  transform: translateY(-1px);
+  background-color: #2980b9; /* Darker primary */
+  transform: translateY(-2px); /* Slightly more pronounced */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Added subtle shadow */
+}
+
+button:focus,
+a.button-link:focus {
+  outline: 3px solid #2980b9; /* Using a darker shade of primary for outline */
+  outline-offset: 1px;
+  /* box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.5), 0 4px 8px rgba(0, 0, 0, 0.15); */ /* Alternative focus */
 }
 
 button:disabled {
@@ -136,19 +184,19 @@ button:disabled {
 
 /* Specifically for form buttons */
 form button[type="submit"] {
-  background-color: #28a745; /* Green for submit */
-  color: white;
+  background-color: #2ecc71; /* Secondary color */
+  color: #ffffff; /* White text */
 }
 form button[type="submit"]:hover {
-  background-color: #218838; /* Darker green */
+  background-color: #27ae60; /* Darker secondary */
 }
-form button[type="button"] { /* Cancel buttons */
-  background-color: #6c757d; /* Gray for cancel */
-  color: white;
+form button[type="button"] { /* Accent/Cancel buttons */
+  background-color: #f1c40f; /* Accent color */
+  color: #34495e; /* Text color for contrast */
   margin-left: 10px;
 }
 form button[type="button"]:hover {
-  background-color: #5a6268; /* Darker gray */
+  background-color: #f39c12; /* Darker accent */
 }
 
 
@@ -162,23 +210,29 @@ table {
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 12px;
+  border: 1px solid #bdc3c7; /* Lighter gray border */
+  padding: 15px 12px; /* Adjusted padding */
   text-align: left;
+  font-family: 'Open Sans', sans-serif; /* Ensure Open Sans for table text */
 }
 
 th {
-  background-color: #f2f2f2; /* Light grey header */
-  font-weight: bold;
-  color: #333;
+  background-color: #3498db; /* Primary color */
+  font-family: 'Montserrat', sans-serif; /* Ensure Montserrat for headers */
+  font-weight: 600; /* Adjusted weight */
+  color: #ffffff; /* White text */
 }
 
 tr:nth-child(even) {
-  background-color: #f9f9f9; /* Zebra striping for rows */
+  background-color: #ecf0f1; /* Background color */
+}
+
+tr { /* Added transition to base tr for hover effect */
+  transition: background-color 0.2s ease-in-out;
 }
 
 tr:hover {
-  background-color: #f1f1f1; /* Hover effect for rows */
+  background-color: #f5f7fa; /* Very light gray for subtle hover */
 }
 
 td button, td a {
@@ -212,32 +266,52 @@ p[style*="color: green"] { /* Targets inline styled success messages */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .App {
+    flex-direction: column; /* Stack sidebar and content vertically */
+  }
+
   nav {
-    flex-direction: column;
+    width: 100%; /* Full width for top bar */
+    height: auto; /* Auto height for content */
+    position: static; /* Change from fixed to static for normal flow */
+    /* overflow-y: visible; /* Not needed for horizontal bar */
+    /* border-bottom: 2px solid #2ecc71; /* Optional: border for visual separation */
   }
+
+  .app-logo {
+    /* Potentially hide or restyle logo for small screens if needed */
+    /* For now, keep it, but ensure it fits */
+    padding: 10px 15px; /* Adjust padding */
+    margin-bottom: 10px;
+  }
+
   nav ul {
-    flex-direction: column;
-    width: 100%;
-    align-items: center; /* Center items in column nav */
+    flex-direction: row; /* Links in a row */
+    justify-content: space-around; /* Distribute links */
+    /* align-items: center; */
   }
+
   nav ul li {
-    margin-right: 0;
-    margin-bottom: 10px; /* Spacing for vertical items */
-    width: 100%;
-    text-align: center;
+    margin-right: 0; /* Remove specific margins for row layout */
+    margin-bottom: 0; /* Remove bottom margin */
+    /* width: auto; /* Auto width for items in a row */
+    /* text-align: center; /* Already centered by default or not needed */
   }
-  nav ul li:last-child {
-    margin-bottom: 0;
-  }
+
   nav a {
-    display: block; /* Make links take full width */
+    padding: 10px; /* Adjust padding for smaller touch targets */
+    /* display: inline-block; /* Or keep block but manage li width */
+  }
+  nav a:hover, nav a.active {
+    transform: none; /* Disable pop-out effect for top bar */
   }
 
-  form {
-    margin-left: 10px;
-    margin-right: 10px;
+  .main-content {
+    margin-left: 0; /* No left margin when sidebar is on top */
+    padding: 20px; /* Reset padding if needed */
   }
 
+  /* Responsive table styles - kept from previous version, might need review */
   /* Make tables scrollable on small screens */
   table, thead, tbody, th, td, tr {
 		display: block;
@@ -271,22 +345,21 @@ p[style*="color: green"] { /* Targets inline styled success messages */
     font-weight: bold;
 	}
 
-  /* Label table cells */
-  /* This requires knowing the headers. Adjust if your tables change. */
-  /* For PlayerList */
-  table td:nth-of-type(1):before { content: "Name"; }
-  table td:nth-of-type(2):before { content: "Position"; }
-  table td:nth-of-type(3):before { content: "Jersey Nr"; }
-  table td:nth-of-type(4):before { content: "Actions"; }
-  /* For TeamList */
-  /* Example: if TeamList has Name, Coach, Actions */
-  /* table td:nth-of-type(1):before { content: "Team Name"; } */
-  /* table td:nth-of-type(2):before { content: "Coach"; } */
-  /* table td:nth-of-type(3):before { content: "Actions"; } */
-  /* Similar for AgentList and LoanList - this part needs careful implementation
-     based on the actual and consistent order of columns in each table.
-     A more robust solution would involve JS or different component structure for mobile tables.
-  */
+  /* Label table cells - The :nth-of-type approach is brittle. */
+  /* For a robust solution, use data attributes on <td> elements in your JS/HTML, like: */
+  /* <td data-label="Name">Player Name</td> */
+  /* Then, in CSS: td:before { content: attr(data-label); } */
+  /* Removing the brittle :nth-of-type rules below: */
+  /* table td:nth-of-type(1):before { content: "Name"; } */
+  /* table td:nth-of-type(2):before { content: "Position"; } */
+  /* table td:nth-of-type(3):before { content: "Jersey Nr"; } */
+  /* table td:nth-of-type(4):before { content: "Actions"; } */
+  /* Adjust other table labels as needed based on actual content */
+
+  form {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
 }
 
 /* Dashboard specific styling */
@@ -297,7 +370,7 @@ p[style*="color: green"] { /* Targets inline styled success messages */
 
 /* Link component styling if it needs to be different from nav a */
 .Link {
-  color: #61dafb;
+  color: #3498db; /* Primary color */
   text-decoration: none;
 }
 
