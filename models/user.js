@@ -45,8 +45,9 @@ function validateUser(user) {
   const schema = Joi.object({
     // Changed to Joi.object for modern Joi
     name: Joi.string().min(4).max(255).required(),
-    email: Joi.string().min(6).max(255).email().required(), // Added .email() validation
+    email: Joi.string().min(6).max(255).required().email(), // Added .email() validation
     password: Joi.string().min(8).max(255).required(),
+    isAdmin: Joi.boolean().required()
   });
   return schema.validate(user); // Changed to modern Joi validation
 }
