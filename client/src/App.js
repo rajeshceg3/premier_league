@@ -21,27 +21,42 @@ function App() {
     <Router>
       <div className="App"> {/* Added className App for potential top-level app styling */}
         <nav>
+          <div className="app-logo">AppLogo</div> {/* Placeholder for logo/title */}
           <ul>
             <li>
-              <NavLink to="/login" className={({ isActive }) => isActive ? "active" : ""}>Login</NavLink>
+              <NavLink to="/login" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-sign-in-alt"></i> Login
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/register" className={({ isActive }) => isActive ? "active" : ""}>Register</NavLink>
+              <NavLink to="/register" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-user-plus"></i> Register
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>Dashboard</NavLink>
+              <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-tachometer-alt"></i> Dashboard
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/players" className={({ isActive }) => isActive ? "active" : ""}>Players</NavLink>
+              <NavLink to="/players" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-users"></i> Players
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/teams" className={({ isActive }) => isActive ? "active" : ""}>Teams</NavLink>
+              <NavLink to="/teams" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-shield-alt"></i> Teams
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/agents" className={({ isActive }) => isActive ? "active" : ""}>Agents</NavLink>
+              <NavLink to="/agents" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-briefcase"></i> Agents
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/loans" className={({ isActive }) => isActive ? "active" : ""}>Loans</NavLink>
+              <NavLink to="/loans" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-handshake"></i> Loans
+              </NavLink>
             </li>
           </ul>
         </nav>
