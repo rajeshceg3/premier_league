@@ -101,6 +101,7 @@ const TeamForm = () => {
           name="coach"
           value={coach}
           onChange={onChange}
+           required // Add this line
         />
       </div>
       {/* Add other form fields as necessary */}

@@ -17,7 +17,7 @@ const TeamList = () => {
         setTeams(res.data);
         setLoading(false);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch teams.');
+        setError((err.response && err.response.data && err.response.data.message) || 'Failed to fetch teams.');
         setLoading(false);
       }
     };
@@ -34,7 +34,7 @@ const TeamList = () => {
         });
         setTeams(teams.filter(team => team._id !== id));
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to delete team.');
+        setError((err.response && err.response.data && err.response.data.message) || 'Failed to delete team.');
       }
     }
   };

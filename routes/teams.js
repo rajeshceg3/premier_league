@@ -14,6 +14,7 @@ router.post('/', async (req, res) => {
 
   const team = new Team({
     name: req.body.name,
+    coach: req.body.coach,
   });
 
   await team.save();
@@ -32,6 +33,7 @@ router.put('/:id', async (req, res) => {
     req.params.id,
     {
       name: req.body.name,
+      coach: req.body.coach,
     },
     {
       new: true,
