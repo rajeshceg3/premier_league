@@ -45,13 +45,13 @@ const playerSchema = new mongoose.Schema({
 const Player = mongoose.model('Player', playerSchema);
 
 function validatePlayer(player) {
-  const schema = {
+  const schema = Joi.object({
     name: Joi.string().min(4).max(50).required(), // Corrected Joi.String to Joi.string
     teamId: Joi.objectId().required(), // Corrected 'team' to 'teamId' to match common practice and request body
     loanDaysRemaining: Joi.number().min(0).required(),
     loanCost: Joi.number().min(0).required(),
-  };
-  return Joi.validate(player, schema);
+  });
+  return schema.validate(player);
 }
 
 module.exports.Player = Player;

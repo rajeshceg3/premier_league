@@ -15,15 +15,27 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { error } = validateLoan(req.body);
-  if (error) res.status(400).send(error.details[0].message);
+  if (error) {
+    res.status(400).send(error.details[0].message);
+    return;
+  }
 
   const agent = await Agent.findById(req.body.agentId);
-  if (!agent) res.status(400).send('Agent ID not found');
+  if (!agent) {
+    res.status(400).send('Agent ID not found');
+    return;
+  }
 
   const player = await Player.findById(req.body.playerId);
-  if (!player) res.status(400).send('Player ID not found');
+  if (!player) {
+    res.status(400).send('Player ID not found');
+    return;
+  }
 
-  if (player.loanDaysRemaining === 0) return res.status(400).send('Player not available for loan');
+  if (player.loanDaysRemaining === 0) {
+    res.status(400).send('Player not available for loan');
+    return;
+  }
 
   const loan = new Loan({
     agent: {
@@ -34,7 +46,7 @@ router.post('/', async (req, res) => {
     player: {
       _id: player._id,
       name: player.name,
-      dailyLoanFee: player.dailyLoanFee,
+      dailyLoanFee: player.loanCost, // Ensure this uses player.loanCost
     },
   });
 
@@ -54,12 +66,20 @@ router.post('/', async (req, res) => {
     res.send(loan);
   } catch (ex) {
     res.status(500).send("Operation Didn't succeed");
+    return;
   }
 });
 
 router.get('/:id', async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    res.status(400).send('Invalid Loan ID.');
+    return;
+  }
   const loan = await Loan.findById(req.params.id).select('-__v');
-  if (!loan) res.status(404).send('Player with given id not found');
+  if (!loan) {
+    res.status(404).send('Loan with given ID not found');
+    return;
+  }
   res.send(loan);
 });
 

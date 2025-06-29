@@ -13,11 +13,11 @@ const teamSchema = new mongoose.Schema({
 const Team = mongoose.model('Team', teamSchema);
 
 function validateTeam(team) {
-  const schema = {
+  const schema = Joi.object({
     name: Joi.string().min(4).max(50).required(),
-  };
-  return Joi.validate(team, schema);
+  });
+  return schema.validate(team);
 }
 
-module.exports = Team;
-module.exports = validateTeam;
+module.exports.Team = Team;
+module.exports.validateTeam = validateTeam;
