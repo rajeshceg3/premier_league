@@ -1,28 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import AddToWatchlistButton from './AddToWatchlistButton'; // Import AddToWatchlistButton
+import { getWatchlist } from '../services/apiClient'; // Import getWatchlist
 
 const PlayerList = () => {
   const [players, setPlayers] = useState([]);
+  const [userWatchlistIds, setUserWatchlistIds] = useState(new Set()); // For storing IDs of watched players
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('/api/players', {
+        if (!token) {
+          setError('Authentication token not found. Please login.');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch players
+        const playersRes = await axios.get('/api/players', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setPlayers(res.data);
+        setPlayers(playersRes.data);
+
+        // Fetch user's watchlist
+        try {
+          const watchlist = await getWatchlist(); // apiClient handles token
+          setUserWatchlistIds(new Set(watchlist.map(p => p._id)));
+        } catch (watchlistError) {
+          console.error("Failed to fetch user's watchlist", watchlistError);
+          // Not setting main error for this, but logging it.
+          // PlayerList can still function without watchlist info.
+        }
+
         setLoading(false);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch players.');
+        setError(err.response?.data?.message || 'Failed to fetch data.');
         setLoading(false);
       }
     };
 
-    fetchPlayers();
+    fetchData();
   }, []);
 
   const handleDelete = async (id) => {
@@ -66,6 +88,10 @@ const PlayerList = () => {
                 <td>
                   <Link to={`/players/edit/${player._id}`}>Edit</Link>
                   <button onClick={() => handleDelete(player._id)}>Delete</button>
+                  <AddToWatchlistButton
+                    playerId={player._id}
+                    isInitiallyWatched={userWatchlistIds.has(player._id)}
+                  />
                 </td>
               </tr>
             ))}

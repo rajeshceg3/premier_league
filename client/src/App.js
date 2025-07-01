@@ -12,6 +12,7 @@ import AgentList from './components/AgentList';
 import AgentForm from './components/AgentForm';
 import LoanList from './components/LoanList'; // Import LoanList
 import LoanForm from './components/LoanForm'; // Import LoanForm
+import WatchlistPage from './components/WatchlistPage'; // Import WatchlistPage
 import './App.css';
 
 function App() {
@@ -58,6 +59,11 @@ function App() {
                 <i className="fas fa-handshake"></i> Loans
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/watchlist" className={({ isActive }) => isActive ? "active" : ""}>
+                <i className="fas fa-list-alt"></i> My Watchlist
+              </NavLink>
+            </li>
           </ul>
         </nav>
 
@@ -65,6 +71,14 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegistrationForm />} />
+            <Route
+              path="/watchlist"
+              element={
+                <ProtectedRoute>
+                  <WatchlistPage />
+                </ProtectedRoute>
+              }
+            />
           <Route
             path="/dashboard"
             element={
