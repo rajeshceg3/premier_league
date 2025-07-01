@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   isAdmin: Boolean,
+  watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }],
 });
 
 userSchema.methods.createAuthToken = function () {
