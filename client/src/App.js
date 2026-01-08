@@ -1,5 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, NavLink, Navigate } from 'react-router-dom'; // Changed Link to NavLink
+import { BrowserRouter as Router, Route, Routes, NavLink, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import LoginForm from './components/LoginForm';
 import RegistrationForm from './components/RegistrationForm';
 import Dashboard from './components/Dashboard';
@@ -10,9 +12,9 @@ import TeamList from './components/TeamList';
 import TeamForm from './components/TeamForm';
 import AgentList from './components/AgentList';
 import AgentForm from './components/AgentForm';
-import LoanList from './components/LoanList'; // Import LoanList
-import LoanForm from './components/LoanForm'; // Import LoanForm
-import WatchlistPage from './components/WatchlistPage'; // Import WatchlistPage
+import LoanList from './components/LoanList';
+import LoanForm from './components/LoanForm';
+import WatchlistPage from './components/WatchlistPage';
 import './App.css';
 
 function App() {
@@ -20,9 +22,10 @@ function App() {
 
   return (
     <Router>
-      <div className="App"> {/* Added className App for potential top-level app styling */}
+      <div className="App">
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
         <nav>
-          <div className="app-logo">AppLogo</div> {/* Placeholder for logo/title */}
+          <div className="app-logo">AppLogo</div>
           <ul>
             <li>
               <NavLink to="/login" className={({ isActive }) => isActive ? "active" : ""}>
@@ -67,7 +70,7 @@ function App() {
           </ul>
         </nav>
 
-        <div className="main-content"> {/* Wrapper for content below nav */}
+        <div className="main-content">
           <Routes>
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegistrationForm />} />
@@ -87,7 +90,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Player Management Routes */}
           <Route
             path="/players"
             element={
@@ -112,7 +114,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Team Management Routes */}
           <Route
             path="/teams"
             element={
@@ -137,7 +138,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Agent Management Routes */}
           <Route
             path="/agents"
             element={
@@ -162,7 +162,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Loan Management Routes */}
           <Route
             path="/loans"
             element={
@@ -187,11 +186,10 @@ function App() {
               </ProtectedRoute>
             }
           />
-            {/* Redirect to dashboard if logged in, otherwise to login */}
             <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
           </Routes>
-        </div> {/* End of main-content */}
-      </div> {/* End of App */}
+        </div>
+      </div>
     </Router>
   );
 }

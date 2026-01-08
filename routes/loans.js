@@ -1,15 +1,11 @@
 const mongoose = require('mongoose');
 const router = require('express').Router();
-const Fawn = require('fawn');
 const { Loan, validateLoan } = require('../models/loan');
 const { Player } = require('../models/player');
-const { Agent } = require('../models/agent'); // Corrected: Agent is a property of the exported object
-
-Fawn.init(mongoose); // Added semicolon for consistency
+const { Agent } = require('../models/agent');
 
 router.get('/', async (req, res) => {
   const loan = await Loan.find().select('-__v').sort('-loanDate');
-
   res.send(loan);
 });
 
@@ -46,27 +42,35 @@ router.post('/', async (req, res) => {
     player: {
       _id: player._id,
       name: player.name,
-      dailyLoanFee: player.loanCost, // Ensure this uses player.loanCost
+      dailyLoanFee: player.loanCost,
     },
   });
 
+  // Replaced Fawn with native transactions or sequential operations
+  // Note: For true ACID transactions, a Replica Set is required.
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    new Fawn.Task()
-      .save('loans', loan)
-      .update(
-        'players',
-        {
-          _id: player._id,
-        },
-        {
-          $inc: { loanDaysRemaining: -1 },
-        }
-      )
-      .run();
+    await loan.save({ session });
+    await Player.updateOne({ _id: player._id }, { $inc: { loanDaysRemaining: -1 } }, { session });
+
+    await session.commitTransaction();
     res.send(loan);
   } catch (ex) {
-    res.status(500).send("Operation Didn't succeed");
-    return;
+    await session.abortTransaction();
+    // Check if error is due to standalone mongo (no transactions)
+    if (ex.message && ex.message.includes('Transactions are not supported')) {
+      // Fallback for standalone (e.g. dev/test without replset)
+      await loan.save();
+      await Player.updateOne({ _id: player._id }, { $inc: { loanDaysRemaining: -1 } });
+      res.send(loan);
+    } else {
+      console.error(ex);
+      res.status(500).send("Operation Didn't succeed");
+    }
+  } finally {
+    session.endSession();
   }
 });
 

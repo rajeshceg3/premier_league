@@ -37,19 +37,19 @@ describe('WatchlistPage', () => {
   test('should display error message if API call fails', async () => {
     getWatchlist.mockRejectedValueOnce(new Error('Failed to fetch'));
     render(<WatchlistPage />);
-    await waitFor(() => expect(screen.getByText(/Error: Failed to fetch/i)).toBeInTheDocument());
+    await screen.findByText(/Error: Failed to fetch/i);
   });
 
   test('should display "Your watchlist is empty" if watchlist is empty', async () => {
     getWatchlist.mockResolvedValueOnce([]);
     render(<WatchlistPage />);
-    await waitFor(() => expect(screen.getByText('Your watchlist is empty.')).toBeInTheDocument());
+    await screen.findByText('Your watchlist is empty.');
   });
 
   test('should display players if watchlist is not empty', async () => {
     getWatchlist.mockResolvedValueOnce(mockPlayers);
     render(<WatchlistPage />);
-    await waitFor(() => expect(screen.getByText('Player One')).toBeInTheDocument());
+    await screen.findByText('Player One');
     expect(screen.getByText('Player Two')).toBeInTheDocument();
     // Check if AddToWatchlistButton is rendered for each (it will say "Remove from Watchlist")
     expect(screen.getAllByText('Remove from Watchlist').length).toBe(mockPlayers.length);
@@ -61,7 +61,7 @@ describe('WatchlistPage', () => {
 
     render(<WatchlistPage />);
 
-    await waitFor(() => expect(screen.getByText('Player One')).toBeInTheDocument());
+    await screen.findByText('Player One');
 
     // Find the "Remove from Watchlist" button associated with Player One
     // This assumes the button is a direct child or identifiable.

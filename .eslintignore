@@ -1,3 +1,5 @@
 node_modules/
 coverage/
 config/custom-environment-variables.json
+client/
+scripts/loadData.js
