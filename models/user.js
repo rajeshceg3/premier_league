@@ -48,7 +48,7 @@ function validateUser(user) {
     name: Joi.string().min(4).max(255).required(),
     email: Joi.string().min(6).max(255).required().email(), // Added .email() validation
     password: Joi.string().min(8).max(255).required(),
-    isAdmin: Joi.boolean().required()
+    isAdmin: Joi.boolean().required(),
   });
   return schema.validate(user); // Changed to modern Joi validation
 }

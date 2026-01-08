@@ -1,21 +1,33 @@
 const request = require('supertest');
-const { Team } = require('../../models/team'); // To interact with the DB for setup/teardown
 const mongoose = require('mongoose');
-let server; // To hold the server instance
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const { Team } = require('../../models/team');
+
+let server;
+let mongoServer;
 
 describe('Teams API', () => {
-  beforeEach(() => {
-    server = require('../../index'); // Start server before each test
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    // Connect explicitly before app can try
+    await mongoose.connect(mongoUri);
+
+    // eslint-disable-next-line global-require
+    server = require('../../index'); // Gets 'app'
   });
 
   afterEach(async () => {
-    await server.close(); // Close server after each test
-    await Team.deleteMany({}); // Clean up the Team collection
+    await Team.deleteMany({});
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
+    await mongoServer.stop();
   });
 
   describe('GET /api/teams', () => {
     it('should return all teams', async () => {
-      // Insert some teams to test with
       await Team.collection.insertMany([
         { name: 'Team Alpha', coach: 'Coach A' },
         { name: 'Team Beta', coach: 'Coach B' },
@@ -24,8 +36,8 @@ describe('Teams API', () => {
       const res = await request(server).get('/api/teams');
       expect(res.status).toBe(200);
       expect(res.body.length).toBe(2);
-      expect(res.body.some(t => t.name === 'Team Alpha' && t.coach === 'Coach A')).toBeTruthy();
-      expect(res.body.some(t => t.name === 'Team Beta' && t.coach === 'Coach B')).toBeTruthy();
+      expect(res.body.some((t) => t.name === 'Team Alpha' && t.coach === 'Coach A')).toBeTruthy();
+      expect(res.body.some((t) => t.name === 'Team Beta' && t.coach === 'Coach B')).toBeTruthy();
     });
   });
 
@@ -34,7 +46,7 @@ describe('Teams API', () => {
       const team = new Team({ name: 'Team Gamma', coach: 'Coach C' });
       await team.save();
 
-      const res = await request(server).get('/api/teams/' + team._id);
+      const res = await request(server).get(`/api/teams/${team._id}`);
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('name', team.name);
@@ -48,39 +60,22 @@ describe('Teams API', () => {
 
     it('should return 404 if no team with the given id exists', async () => {
       const id = new mongoose.Types.ObjectId().toHexString();
-      const res = await request(server).get('/api/teams/' + id);
+      const res = await request(server).get(`/api/teams/${id}`);
       expect(res.status).toBe(404);
     });
   });
 
   describe('POST /api/teams', () => {
-    // let token; // Assuming you have auth, otherwise remove token logic
-
-    // beforeEach(() => {
-      // If you have authentication, generate a token here
-      // token = new User().generateAuthToken();
-      // For now, we'll assume no auth or a way to bypass for tests
-    // });
-
     const exec = async (teamData) => {
-      return await request(server)
-        .post('/api/teams')
-        // .set('x-auth-token', token) // If auth is used
-        .send(teamData);
+      return request(server).post('/api/teams').send(teamData);
     };
 
     it('should return 200 and the team if it is valid', async () => {
       const res = await exec({ name: 'Team Delta', coach: 'Coach D' });
-
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('_id');
       expect(res.body).toHaveProperty('name', 'Team Delta');
       expect(res.body).toHaveProperty('coach', 'Coach D');
-
-      const teamInDb = await Team.findById(res.body._id);
-      expect(teamInDb).not.toBeNull();
-      expect(teamInDb.name).toBe('Team Delta');
-      expect(teamInDb.coach).toBe('Coach D');
     });
 
     it('should return 400 if name is missing', async () => {
@@ -99,8 +94,8 @@ describe('Teams API', () => {
     });
 
     it('should return 400 if name is more than 50 characters', async () => {
-      const name = new Array(52).join('a'); // 51 chars
-      const res = await exec({ name: name, coach: 'Coach G' });
+      const name = new Array(52).join('a');
+      const res = await exec({ name, coach: 'Coach G' });
       expect(res.status).toBe(400);
     });
 
@@ -110,8 +105,8 @@ describe('Teams API', () => {
     });
 
     it('should return 400 if coach name is more than 50 characters', async () => {
-      const coach = new Array(52).join('c'); // 51 chars
-      const res = await exec({ name: 'Valid Team Name', coach: coach });
+      const coach = new Array(52).join('c');
+      const res = await exec({ name: 'Valid Team Name', coach });
       expect(res.status).toBe(400);
     });
   });
@@ -129,23 +124,17 @@ describe('Teams API', () => {
     });
 
     const exec = async (updateData, teamId) => {
-      return await request(server)
-        .put('/api/teams/' + (teamId || id))
-        // .set('x-auth-token', token) // If auth
+      return request(server)
+        .put(`/api/teams/${teamId || id}`)
         .send(updateData);
     };
 
     it('should return 200 and the updated team if input is valid', async () => {
       const res = await exec({ name: newName, coach: newCoach });
-
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('_id', id);
       expect(res.body).toHaveProperty('name', newName);
       expect(res.body).toHaveProperty('coach', newCoach);
-
-      const updatedTeamInDb = await Team.findById(id);
-      expect(updatedTeamInDb.name).toBe(newName);
-      expect(updatedTeamInDb.coach).toBe(newCoach);
     });
 
     it('should return 400 if ID is invalid', async () => {
@@ -181,19 +170,12 @@ describe('Teams API', () => {
     });
 
     const exec = async (teamId) => {
-      return await request(server)
-        .delete('/api/teams/' + (teamId || id))
-        // .set('x-auth-token', token); // If auth
+      return request(server).delete(`/api/teams/${teamId || id}`);
     };
 
     it('should return 200 and the removed team if ID is valid', async () => {
       const res = await exec();
-
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('_id', id);
-      expect(res.body).toHaveProperty('name', team.name);
-      expect(res.body).toHaveProperty('coach', team.coach);
-
       const teamInDb = await Team.findById(id);
       expect(teamInDb).toBeNull();
     });

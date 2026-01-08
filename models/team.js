@@ -26,5 +26,6 @@ function validateTeam(team) {
   return schema.validate(team);
 }
 
+module.exports.teamSchema = teamSchema;
 module.exports.Team = Team;
 module.exports.validateTeam = validateTeam;

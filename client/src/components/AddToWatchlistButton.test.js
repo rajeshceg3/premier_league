@@ -40,7 +40,7 @@ describe('AddToWatchlistButton', () => {
 
     expect(screen.getByText('...')).toBeInTheDocument(); // Loading state
     await waitFor(() => expect(addToWatchlist).toHaveBeenCalledWith(playerId));
-    await waitFor(() => expect(screen.getByText('Remove from Watchlist')).toBeInTheDocument());
+    await screen.findByText('Remove from Watchlist');
     expect(onToggleMock).toHaveBeenCalledWith(true); // New state is watched: true
   });
 
@@ -53,7 +53,7 @@ describe('AddToWatchlistButton', () => {
 
     expect(screen.getByText('...')).toBeInTheDocument(); // Loading state
     await waitFor(() => expect(removeFromWatchlist).toHaveBeenCalledWith(playerId));
-    await waitFor(() => expect(screen.getByText('Add to Watchlist')).toBeInTheDocument());
+    await screen.findByText('Add to Watchlist');
     expect(onToggleMock).toHaveBeenCalledWith(false); // New state is watched: false
   });
 
@@ -66,7 +66,7 @@ describe('AddToWatchlistButton', () => {
 
     await waitFor(() => expect(addToWatchlist).toHaveBeenCalledWith(playerId));
     // Button should revert to original state or show error, here it reverts
-    await waitFor(() => expect(screen.getByText('Add to Watchlist')).toBeInTheDocument());
+    await screen.findByText('Add to Watchlist');
     expect(onToggleMock).not.toHaveBeenCalled();
   });
 
@@ -78,7 +78,7 @@ describe('AddToWatchlistButton', () => {
     fireEvent.click(removeButton);
 
     await waitFor(() => expect(removeFromWatchlist).toHaveBeenCalledWith(playerId));
-    await waitFor(() => expect(screen.getByText('Remove from Watchlist')).toBeInTheDocument());
+    await screen.findByText('Remove from Watchlist');
     expect(onToggleMock).not.toHaveBeenCalled();
   });
 
@@ -94,7 +94,7 @@ describe('AddToWatchlistButton', () => {
     expect(button).toBeDisabled();
     expect(screen.getByText('...')).toBeInTheDocument();
 
-    await waitFor(() => expect(screen.getByText('Remove from Watchlist')).toBeInTheDocument());
+    await screen.findByText('Remove from Watchlist');
     expect(button).not.toBeDisabled();
   });
 });

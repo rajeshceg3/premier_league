@@ -1,10 +1,12 @@
 const request = require('supertest');
+const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const { User } = require('../../models/user');
 const { Player } = require('../../models/player');
 const { Team } = require('../../models/team');
-const mongoose = require('mongoose');
 
 let server;
+let mongoServer;
 let token;
 let userId;
 let samplePlayer;
@@ -12,10 +14,26 @@ let sampleTeam;
 let otherPlayer;
 
 describe('/api/users/watchlist', () => {
-  beforeEach(async () => {
-    server = require('../../index'); // Start server from your main app file
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    await mongoose.connect(mongoUri);
 
-    sampleTeam = new Team({ name: 'Test Team FC', stadium: 'Test Stadium Arena' });
+    // eslint-disable-next-line global-require
+    server = require('../../index'); // Gets 'app'
+  });
+
+  afterAll(async () => {
+    await mongoose.connection.close();
+    await mongoServer.stop();
+  });
+
+  beforeEach(async () => {
+    await User.deleteMany({});
+    await Player.deleteMany({});
+    await Team.deleteMany({});
+
+    sampleTeam = new Team({ name: 'Test Team FC', coach: 'Test Coach' });
     await sampleTeam.save();
 
     const userPayload = {
@@ -24,7 +42,6 @@ describe('/api/users/watchlist', () => {
       password: 'password123',
       isAdmin: false,
     };
-    // Register user directly or use API if preferred, then login to get token
     const user = new User(userPayload);
     await user.save();
     userId = user._id;
@@ -32,10 +49,9 @@ describe('/api/users/watchlist', () => {
 
     samplePlayer = new Player({
       name: 'Test Player Alpha',
-      team: sampleTeam.toObject(), // Embed team subdocument
+      team: sampleTeam.toObject(),
       loanDaysRemaining: 10,
       loanCost: 100,
-      // apiFootballId, statistics, dateOfBirth, nationality can be omitted if not strictly required by model for this test
     });
     await samplePlayer.save();
 
@@ -49,13 +65,11 @@ describe('/api/users/watchlist', () => {
   });
 
   afterEach(async () => {
-    await server.close(); // Close server
     await User.deleteMany({});
     await Player.deleteMany({});
     await Team.deleteMany({});
   });
 
-  // GET /api/users/watchlist
   describe('GET /', () => {
     it('should return 401 if client is not logged in', async () => {
       const res = await request(server).get('/api/users/watchlist');
@@ -63,18 +77,14 @@ describe('/api/users/watchlist', () => {
     });
 
     it('should return the user watchlist (empty initially)', async () => {
-      const res = await request(server)
-        .get('/api/users/watchlist')
-        .set('x-auth-token', token);
+      const res = await request(server).get('/api/users/watchlist').set('x-auth-token', token);
       expect(res.status).toBe(200);
       expect(res.body).toEqual([]);
     });
 
     it('should return the user watchlist with players if populated', async () => {
       await User.findByIdAndUpdate(userId, { $addToSet: { watchlist: samplePlayer._id } });
-      const res = await request(server)
-        .get('/api/users/watchlist')
-        .set('x-auth-token', token);
+      const res = await request(server).get('/api/users/watchlist').set('x-auth-token', token);
       expect(res.status).toBe(200);
       expect(res.body.length).toBe(1);
       expect(res.body[0].name).toBe(samplePlayer.name);
@@ -82,7 +92,6 @@ describe('/api/users/watchlist', () => {
     });
   });
 
-  // POST /api/users/watchlist/:playerId
   describe('POST /:playerId', () => {
     it('should return 401 if client is not logged in', async () => {
       const res = await request(server).post(`/api/users/watchlist/${samplePlayer._id}`);
@@ -95,7 +104,7 @@ describe('/api/users/watchlist', () => {
         .set('x-auth-token', token);
       expect(res.status).toBe(200);
       const userInDb = await User.findById(userId);
-      expect(userInDb.watchlist.map(id => id.toString())).toContain(samplePlayer._id.toString());
+      expect(userInDb.watchlist.map((id) => id.toString())).toContain(samplePlayer._id.toString());
     });
 
     it('should return 400 if playerId is an invalid ObjectId', async () => {
@@ -125,10 +134,8 @@ describe('/api/users/watchlist', () => {
     });
   });
 
-  // DELETE /api/users/watchlist/:playerId
   describe('DELETE /:playerId', () => {
     beforeEach(async () => {
-      // Add player to watchlist first
       await User.findByIdAndUpdate(userId, { $addToSet: { watchlist: samplePlayer._id } });
     });
 
@@ -143,7 +150,9 @@ describe('/api/users/watchlist', () => {
         .set('x-auth-token', token);
       expect(res.status).toBe(200);
       const userInDb = await User.findById(userId);
-      expect(userInDb.watchlist.map(id => id.toString())).not.toContain(samplePlayer._id.toString());
+      expect(userInDb.watchlist.map((id) => id.toString())).not.toContain(
+        samplePlayer._id.toString()
+      );
     });
 
     it('should return 400 if playerId is an invalid ObjectId for delete', async () => {
@@ -155,7 +164,6 @@ describe('/api/users/watchlist', () => {
     });
 
     it('should return 404 if player is not in the watchlist to begin with for delete', async () => {
-      // otherPlayer was not added to watchlist in this describe's beforeEach
       const res = await request(server)
         .delete(`/api/users/watchlist/${otherPlayer._id}`)
         .set('x-auth-token', token);
