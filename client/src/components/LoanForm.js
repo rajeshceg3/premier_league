@@ -86,16 +86,15 @@ const LoanForm = () => {
     }
 
     try {
-      let res;
       const payload = { ...formData };
       // Ensure empty strings are not sent if agent is optional, or handle as needed by backend
       if (!payload.agent) delete payload.agent;
 
       if (id) {
-        res = await axios.put(`/api/loans/${id}`, payload, config);
+        await axios.put(`/api/loans/${id}`, payload, config);
         setMessage('Loan updated successfully!');
       } else {
-        res = await axios.post('/api/loans', payload, config);
+        await axios.post('/api/loans', payload, config);
         setMessage('Loan added successfully!');
       }
 

@@ -10,7 +10,7 @@ require('./startup/db')();
 
 // Startup check for jwtPrivateKey
 if (!config.get('jwtPrivateKey')) {
-  console.error('FATAL ERROR: jwtPrivateKey is not defined.');
+  winston.error('FATAL ERROR: jwtPrivateKey is not defined.');
   process.exit(1);
 }
 

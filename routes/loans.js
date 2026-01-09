@@ -66,8 +66,7 @@ router.post('/', async (req, res) => {
       await Player.updateOne({ _id: player._id }, { $inc: { loanDaysRemaining: -1 } });
       res.send(loan);
     } else {
-      console.error(ex);
-      res.status(500).send("Operation Didn't succeed");
+      throw ex;
     }
   } finally {
     session.endSession();

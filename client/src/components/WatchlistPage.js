@@ -37,8 +37,13 @@ const WatchlistPage = () => {
     // For now, just removing is the primary concern for this page.
   };
 
-  if (loading) return <p style={{ textAlign: 'center', padding: '20px' }}>Loading watchlist...</p>;
-  if (error) return <p style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Error: {error}</p>;
+  if (loading) return <p role="status" style={{ textAlign: 'center', padding: '20px' }}>Loading watchlist...</p>;
+  if (error) return (
+      <div style={{ textAlign: 'center', padding: '20px', color: 'red' }} role="alert">
+          <p>Error: {error}</p>
+          <button onClick={fetchWatchlistData} style={{ marginTop: '10px' }}>Retry</button>
+      </div>
+  );
 
   if (watchlist.length === 0) return <p style={{ textAlign: 'center', padding: '20px' }}>Your watchlist is empty.</p>;
 

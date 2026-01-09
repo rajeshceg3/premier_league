@@ -58,12 +58,11 @@ const PlayerForm = () => {
     };
 
     try {
-      let res;
       if (id) { // If ID exists, it's an update (PUT)
-        res = await axios.put(`/api/players/${id}`, formData, config);
+        await axios.put(`/api/players/${id}`, formData, config);
         setMessage('Player updated successfully!');
       } else { // Otherwise, it's a create (POST)
-        res = await axios.post('/api/players', formData, config);
+        await axios.post('/api/players', formData, config);
         setMessage('Player added successfully!');
       }
 
