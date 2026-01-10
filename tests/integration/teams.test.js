@@ -2,28 +2,40 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { Team } = require('../../models/team');
+const { User } = require('../../models/user');
 
 let server;
 let mongoServer;
+let adminToken;
 
 describe('Teams API', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
-    // Connect explicitly before app can try
     await mongoose.connect(mongoUri);
-
     // eslint-disable-next-line global-require
     server = require('../../index'); // Gets 'app'
   });
 
   afterEach(async () => {
     await Team.deleteMany({});
+    await User.deleteMany({});
   });
 
   afterAll(async () => {
     await mongoose.connection.close();
     await mongoServer.stop();
+  });
+
+  beforeEach(async () => {
+    const admin = new User({
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: 'password123',
+      isAdmin: true,
+    });
+    await admin.save();
+    adminToken = admin.createAuthToken();
   });
 
   describe('GET /api/teams', () => {
@@ -67,10 +79,13 @@ describe('Teams API', () => {
 
   describe('POST /api/teams', () => {
     const exec = async (teamData) => {
-      return request(server).post('/api/teams').send(teamData);
+      return request(server)
+        .post('/api/teams')
+        .set('x-auth-token', adminToken)
+        .send(teamData);
     };
 
-    it('should return 200 and the team if it is valid', async () => {
+    it('should return 200 and the team if it is valid and user is admin', async () => {
       const res = await exec({ name: 'Team Delta', coach: 'Coach D' });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('_id');
@@ -126,10 +141,11 @@ describe('Teams API', () => {
     const exec = async (updateData, teamId) => {
       return request(server)
         .put(`/api/teams/${teamId || id}`)
+        .set('x-auth-token', adminToken)
         .send(updateData);
     };
 
-    it('should return 200 and the updated team if input is valid', async () => {
+    it('should return 200 and the updated team if input is valid and user is admin', async () => {
       const res = await exec({ name: newName, coach: newCoach });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('_id', id);
@@ -170,10 +186,12 @@ describe('Teams API', () => {
     });
 
     const exec = async (teamId) => {
-      return request(server).delete(`/api/teams/${teamId || id}`);
+      return request(server)
+        .delete(`/api/teams/${teamId || id}`)
+        .set('x-auth-token', adminToken);
     };
 
-    it('should return 200 and the removed team if ID is valid', async () => {
+    it('should return 200 and the removed team if ID is valid and user is admin', async () => {
       const res = await exec();
       expect(res.status).toBe(200);
       const teamInDb = await Team.findById(id);

@@ -3,13 +3,14 @@ const router = require('express').Router();
 const { Loan, validateLoan } = require('../models/loan');
 const { Player } = require('../models/player');
 const { Agent } = require('../models/agent');
+const auth = require('../middleware/auth');
 
 router.get('/', async (req, res) => {
   const loan = await Loan.find().select('-__v').sort('-loanDate');
   res.send(loan);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   const { error } = validateLoan(req.body);
   if (error) {
     res.status(400).send(error.details[0].message);
@@ -60,7 +61,11 @@ router.post('/', async (req, res) => {
   } catch (ex) {
     await session.abortTransaction();
     // Check if error is due to standalone mongo (no transactions)
-    if (ex.message && ex.message.includes('Transactions are not supported')) {
+    if (
+      ex.message &&
+      (ex.message.includes('Transactions are not supported') ||
+        ex.message.includes('Transaction numbers are only allowed'))
+    ) {
       // Fallback for standalone (e.g. dev/test without replset)
       await loan.save();
       await Player.updateOne({ _id: player._id }, { $inc: { loanDaysRemaining: -1 } });
