@@ -10,12 +10,14 @@ const apiClient = axios.create({
   },
 });
 
+const winston = require('winston');
+
 const getFixtures = async (params) => {
   try {
     const response = await apiClient.get('fixtures', { params });
     return response.data;
   } catch (error) {
-    console.error('Error fetching fixtures:', error);
+    winston.error('Error fetching fixtures:', error);
     throw error;
   }
 };
@@ -25,7 +27,7 @@ const getTeams = async (params) => {
     const response = await apiClient.get('teams', { params });
     return response.data;
   } catch (error) {
-    console.error('Error fetching teams:', error);
+    winston.error('Error fetching teams:', error);
     throw error;
   }
 };

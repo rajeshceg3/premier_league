@@ -29,7 +29,12 @@ const AddToWatchlistButton = ({ playerId, isInitiallyWatched, onToggle }) => {
   };
 
   return (
-    <button onClick={handleClick} disabled={loading} style={{ padding: '8px 12px', cursor: loading ? 'not-allowed' : 'pointer' }}>
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      aria-label={watched ? 'Remove from Watchlist' : 'Add to Watchlist'}
+      style={{ padding: '8px 12px', cursor: loading ? 'not-allowed' : 'pointer' }}
+    >
       {loading ? '...' : (watched ? 'Remove from Watchlist' : 'Add to Watchlist')}
     </button>
   );

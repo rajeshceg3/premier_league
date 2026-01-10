@@ -56,12 +56,11 @@ const AgentForm = () => {
     };
 
     try {
-      let res;
       if (id) { // If ID exists, it's an update (PUT)
-        res = await axios.put(`/api/agents/${id}`, formData, config);
+        await axios.put(`/api/agents/${id}`, formData, config);
         setMessage('Agent updated successfully!');
       } else { // Otherwise, it's a create (POST)
-        res = await axios.post('/api/agents', formData, config);
+        await axios.post('/api/agents', formData, config);
         setMessage('Agent added successfully!');
       }
 
