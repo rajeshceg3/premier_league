@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const { email, password } = formData;
 
@@ -15,45 +19,59 @@ const LoginForm = () => {
 
   const onSubmit = async e => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const res = await axios.post('/api/auth/login', formData);
-      localStorage.setItem('token', res.data.token);
-      setMessage('Login successful!');
-      setError('');
-      // Redirect to a protected route or dashboard
+      await login(email, password);
+      toast.success('Login successful!');
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
-      setMessage('');
+      toast.error(err.response?.data?.message || err.response?.data || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={onSubmit}>
-      <h2>Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {message && <p style={{ color: 'green' }}>{message}</p>}
-      <div>
-        <input
-          type="email"
-          placeholder="Email"
-          name="email"
-          value={email}
-          onChange={onChange}
-          required
-        />
-      </div>
-      <div>
-        <input
-          type="password"
-          placeholder="Password"
-          name="password"
-          value={password}
-          onChange={onChange}
-          required
-        />
-      </div>
-      <button type="submit">Login</button>
-    </form>
+    <Container className="mt-5">
+      <Row className="justify-content-md-center">
+        <Col xs={12} md={6}>
+          <Card>
+            <Card.Header as="h3" className="text-center">Login</Card.Header>
+            <Card.Body>
+              <Form onSubmit={onSubmit}>
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                  <Form.Label>Email address</Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="Enter email"
+                    name="email"
+                    value={email}
+                    onChange={onChange}
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formBasicPassword">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    placeholder="Password"
+                    name="password"
+                    value={password}
+                    onChange={onChange}
+                    required
+                  />
+                </Form.Group>
+
+                <Button variant="primary" type="submit" className="w-100" disabled={loading}>
+                  {loading ? 'Logging in...' : 'Login'}
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

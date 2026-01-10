@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, NavLink, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Navbar, Nav, Container, Offcanvas } from 'react-bootstrap';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginForm from './components/LoginForm';
 import RegistrationForm from './components/RegistrationForm';
 import Dashboard from './components/Dashboard';
@@ -17,60 +19,62 @@ import LoanForm from './components/LoanForm';
 import WatchlistPage from './components/WatchlistPage';
 import './App.css';
 
-function App() {
-  const token = localStorage.getItem('token');
+function AppContent() {
+  const { user, loading, logout } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+
+  if (loading) {
+      return (
+        <div className="d-flex justify-content-center align-items-center vh-100">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      );
+  }
 
   return (
-    <Router>
       <div className="App">
         <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-        <nav>
-          <div className="app-logo">AppLogo</div>
-          <ul>
-            <li>
-              <NavLink to="/login" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-sign-in-alt"></i> Login
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/register" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-user-plus"></i> Register
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-tachometer-alt"></i> Dashboard
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/players" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-users"></i> Players
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/teams" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-shield-alt"></i> Teams
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/agents" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-briefcase"></i> Agents
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/loans" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-handshake"></i> Loans
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/watchlist" className={({ isActive }) => isActive ? "active" : ""}>
-                <i className="fas fa-list-alt"></i> My Watchlist
-              </NavLink>
-            </li>
-          </ul>
-        </nav>
 
-        <div className="main-content">
+        <Navbar bg="dark" variant="dark" expand="lg" expanded={expanded} onToggle={setExpanded}>
+          <Container fluid>
+            <Navbar.Brand as={NavLink} to="/" onClick={() => setExpanded(false)}>Premier League Loans</Navbar.Brand>
+            <Navbar.Toggle aria-controls="offcanvasNavbar" />
+            <Navbar.Offcanvas
+              id="offcanvasNavbar"
+              aria-labelledby="offcanvasNavbarLabel"
+              placement="end"
+            >
+              <Offcanvas.Header closeButton onClick={() => setExpanded(false)}>
+                <Offcanvas.Title id="offcanvasNavbarLabel">Menu</Offcanvas.Title>
+              </Offcanvas.Header>
+              <Offcanvas.Body>
+                <Nav className="justify-content-end flex-grow-1 pe-3">
+                  {!user && (
+                    <>
+                      <Nav.Link as={NavLink} to="/login" onClick={() => setExpanded(false)}><i className="fas fa-sign-in-alt"></i> Login</Nav.Link>
+                      <Nav.Link as={NavLink} to="/register" onClick={() => setExpanded(false)}><i className="fas fa-user-plus"></i> Register</Nav.Link>
+                    </>
+                  )}
+                  {user && (
+                    <>
+                      <Nav.Link as={NavLink} to="/dashboard" onClick={() => setExpanded(false)}><i className="fas fa-tachometer-alt"></i> Dashboard</Nav.Link>
+                      <Nav.Link as={NavLink} to="/players" onClick={() => setExpanded(false)}><i className="fas fa-users"></i> Players</Nav.Link>
+                      <Nav.Link as={NavLink} to="/teams" onClick={() => setExpanded(false)}><i className="fas fa-shield-alt"></i> Teams</Nav.Link>
+                      <Nav.Link as={NavLink} to="/agents" onClick={() => setExpanded(false)}><i className="fas fa-briefcase"></i> Agents</Nav.Link>
+                      <Nav.Link as={NavLink} to="/loans" onClick={() => setExpanded(false)}><i className="fas fa-handshake"></i> Loans</Nav.Link>
+                      <Nav.Link as={NavLink} to="/watchlist" onClick={() => setExpanded(false)}><i className="fas fa-list-alt"></i> Watchlist</Nav.Link>
+                      <Nav.Link onClick={() => { logout(); setExpanded(false); }} style={{cursor: 'pointer'}}><i className="fas fa-sign-out-alt"></i> Logout</Nav.Link>
+                    </>
+                  )}
+                </Nav>
+              </Offcanvas.Body>
+            </Navbar.Offcanvas>
+          </Container>
+        </Navbar>
+
+        <Container className="mt-4">
           <Routes>
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegistrationForm />} />
@@ -186,10 +190,19 @@ function App() {
               </ProtectedRoute>
             }
           />
-            <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+            <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
           </Routes>
-        </div>
+        </Container>
       </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }
