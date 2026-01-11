@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
+import { setAuthToken } from '../services/apiClient';
 
 const AuthContext = createContext();
 
@@ -14,15 +15,15 @@ export const AuthProvider = ({ children }) => {
       try {
         const decoded = jwtDecode(token);
         setUser(decoded);
-        axios.defaults.headers.common['x-auth-token'] = token;
+        setAuthToken(token);
       } catch (ex) {
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
-        delete axios.defaults.headers.common['x-auth-token'];
+        setAuthToken(null);
       }
     } else {
-        delete axios.defaults.headers.common['x-auth-token'];
+        setAuthToken(null);
         setUser(null);
     }
     setLoading(false);

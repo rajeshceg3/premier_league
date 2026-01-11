@@ -1,21 +1,15 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import WatchlistPage from './WatchlistPage';
-import { getWatchlist, removeFromWatchlist } from '../services/apiClient'; // removeFromWatchlist needed for button interaction
+import { getWatchlist, removeFromWatchlist } from '../services/apiClient';
 
 // Mock the apiClient module
 jest.mock('../services/apiClient', () => ({
   getWatchlist: jest.fn(),
-  // We also need to mock functions used by AddToWatchlistButton if it's deeply rendered
-  // and its interactions are tested through WatchlistPage
   addToWatchlist: jest.fn(),
   removeFromWatchlist: jest.fn(),
 }));
-
-// Mock AddToWatchlistButton to simplify testing of WatchlistPage itself
-// Or allow its full render and mock its specific API calls as done above.
-// For this test, we'll allow its full render and rely on the apiClient mocks.
 
 const mockPlayers = [
   { _id: '1', name: 'Player One', team: { name: 'Team A' }, nationality: 'Wonderland' },
@@ -25,25 +19,31 @@ const mockPlayers = [
 describe('WatchlistPage', () => {
   beforeEach(() => {
     getWatchlist.mockClear();
-    removeFromWatchlist.mockClear(); // Clear this as it's used by the button
+    removeFromWatchlist.mockClear();
   });
 
   test('should display loading message initially', () => {
-    getWatchlist.mockReturnValueOnce(new Promise(() => {})); // Never resolves
+    getWatchlist.mockReturnValueOnce(new Promise(() => {}));
     render(<WatchlistPage />);
-    expect(screen.getByText('Loading watchlist...')).toBeInTheDocument();
+    // The loading spinner has "Loading..." in visually-hidden span
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   test('should display error message if API call fails', async () => {
     getWatchlist.mockRejectedValueOnce(new Error('Failed to fetch'));
     render(<WatchlistPage />);
-    await screen.findByText(/Error: Failed to fetch/i);
+    // "Failed to fetch" text will be present
+    await screen.findByText('Failed to fetch');
   });
 
   test('should display "Your watchlist is empty" if watchlist is empty', async () => {
     getWatchlist.mockResolvedValueOnce([]);
     render(<WatchlistPage />);
-    await screen.findByText('Your watchlist is empty.');
+    // The text is split by a <br/> and link, but "Your watchlist is empty." is in the alert box.
+    // However, react-testing-library's getByText might need exact match or regex.
+    // The component has: Your watchlist is empty. <br/> Go to ...
+    // Using a regex is safer.
+    await screen.findByText(/Your watchlist is empty/i);
   });
 
   test('should display players if watchlist is not empty', async () => {
@@ -51,47 +51,40 @@ describe('WatchlistPage', () => {
     render(<WatchlistPage />);
     await screen.findByText('Player One');
     expect(screen.getByText('Player Two')).toBeInTheDocument();
-    // Check if AddToWatchlistButton is rendered for each (it will say "Remove from Watchlist")
-    expect(screen.getAllByText('Remove from Watchlist').length).toBe(mockPlayers.length);
+
+    // AddToWatchlistButton renders "Remove from Watchlist" when isInitiallyWatched is true
+    // There should be 2 such buttons
+    const removeButtons = screen.getAllByRole('button', { name: /remove from watchlist/i });
+    expect(removeButtons.length).toBe(mockPlayers.length);
   });
 
   test('should remove player from list when its "Remove from Watchlist" button is clicked', async () => {
-    getWatchlist.mockResolvedValueOnce([...mockPlayers]); // Initial load
-    removeFromWatchlist.mockResolvedValueOnce({}); // Mock successful removal for player '1'
+    getWatchlist.mockResolvedValueOnce([...mockPlayers]);
+    removeFromWatchlist.mockResolvedValueOnce({});
 
     render(<WatchlistPage />);
 
     await screen.findByText('Player One');
 
-    // Find the "Remove from Watchlist" button associated with Player One
-    // This assumes the button is a direct child or identifiable.
-    // A more robust way would be to find the button within the player's card.
-    const playerOneCard = screen.getByText('Player One').closest('div'); // Find the parent card
-    const removeButtons = screen.getAllByText('Remove from Watchlist');
-
-    // Let's assume the first "Remove from Watchlist" button corresponds to "Player One"
-    // This could be fragile if order changes or if buttons are not unique enough.
-    // A data-testid on the button including player ID would be better.
-    // For now, we find the button within player one's card.
-    const playerOneRemoveButton = Array.from(playerOneCard.querySelectorAll('button')).find(
-        (btn) => btn.textContent === 'Remove from Watchlist'
-      );
+    // Find the card for Player One
+    // We can find the element with text "Player One", then traverse up to the card body
+    // Or we can assume the button is in the same container.
+    // A robust way:
+    const playerOneNameElement = screen.getByText('Player One');
+    // The card body contains the name and the button.
+    // We can use `closest` or just search within the screen if we assume unique names.
+    // But let's be precise.
+    const cardBody = playerOneNameElement.closest('.card-body');
+    const playerOneRemoveButton = within(cardBody).getByRole('button', { name: /remove from watchlist/i });
 
     fireEvent.click(playerOneRemoveButton);
 
     await waitFor(() => expect(removeFromWatchlist).toHaveBeenCalledWith('1'));
-    // Player One should be removed from the list optimistically
+
+    // Player One should be removed
     await waitFor(() => expect(screen.queryByText('Player One')).not.toBeInTheDocument());
+
     // Player Two should still be there
     expect(screen.getByText('Player Two')).toBeInTheDocument();
-  });
-
-  test('AddToWatchlistButton for each player is initially in "Remove from Watchlist" state', async () => {
-    getWatchlist.mockResolvedValueOnce(mockPlayers);
-    render(<WatchlistPage />);
-    await waitFor(() => {
-      const removeButtons = screen.getAllByRole('button', { name: /remove from watchlist/i });
-      expect(removeButtons.length).toBe(mockPlayers.length);
-    });
   });
 });
