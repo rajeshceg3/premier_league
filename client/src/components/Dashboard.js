@@ -2,17 +2,41 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../services/apiClient';
 
 const Dashboard = () => {
   const { user } = useAuth();
-
-  // Placeholder for dashboard stats
-  const stats = [
+  const [stats, setStats] = useState([
     { title: 'Players', count: '-', link: '/players', icon: 'fas fa-users', color: 'primary' },
     { title: 'Teams', count: '-', link: '/teams', icon: 'fas fa-shield-alt', color: 'success' },
     { title: 'Agents', count: '-', link: '/agents', icon: 'fas fa-briefcase', color: 'warning' },
     { title: 'Loans', count: '-', link: '/loans', icon: 'fas fa-handshake', color: 'info' },
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [playersRes, teamsRes, agentsRes, loansRes] = await Promise.all([
+          apiClient.get('/players'),
+          apiClient.get('/teams'),
+          apiClient.get('/agents'),
+          apiClient.get('/loans')
+        ]);
+
+        setStats([
+          { title: 'Players', count: playersRes.data.length, link: '/players', icon: 'fas fa-users', color: 'primary' },
+          { title: 'Teams', count: teamsRes.data.length, link: '/teams', icon: 'fas fa-shield-alt', color: 'success' },
+          { title: 'Agents', count: agentsRes.data.length, link: '/agents', icon: 'fas fa-briefcase', color: 'warning' },
+          { title: 'Loans', count: loansRes.data.length, link: '/loans', icon: 'fas fa-handshake', color: 'info' },
+        ]);
+      } catch (error) {
+        console.error("Error fetching dashboard stats", error);
+        // Optionally handle error state
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <Container className="mt-4">
@@ -60,10 +84,10 @@ const Dashboard = () => {
             <Card className="shadow-sm h-100">
                 <Card.Header>Watchlist Preview</Card.Header>
                 <Card.Body>
-                    <p className="text-muted text-center my-5">
-                        <i className="fas fa-list-alt fa-3x mb-3 d-block"></i>
-                        No items in your watchlist yet.
-                    </p>
+                    <div className="text-center my-4">
+                        <i className="fas fa-list-alt fa-3x mb-3 text-muted"></i>
+                        <p className="text-muted">Quickly access your tracked players.</p>
+                    </div>
                     <div className="d-grid">
                         <Button variant="outline-secondary" as={Link} to="/watchlist">Go to Watchlist</Button>
                     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getWatchlist } from '../services/apiClient';
 import AddToWatchlistButton from './AddToWatchlistButton';
+import { Container, Row, Col, Card, Alert, Spinner, Button } from 'react-bootstrap';
 
 const WatchlistPage = () => {
   const [watchlist, setWatchlist] = useState([]);
@@ -9,14 +10,14 @@ const WatchlistPage = () => {
 
   const fetchWatchlistData = useCallback(async () => {
     setLoading(true);
-    setError(null); // Reset error state before fetching
+    setError(null);
     try {
       const data = await getWatchlist();
-      setWatchlist(Array.isArray(data) ? data : []); // Ensure data is an array
+      setWatchlist(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching watchlist:', err.response?.data || err.message);
       setError(err.response?.data?.message || err.message || 'Failed to fetch watchlist');
-      setWatchlist([]); // Clear watchlist on error
+      setWatchlist([]);
     }
     setLoading(false);
   }, []);
@@ -26,54 +27,68 @@ const WatchlistPage = () => {
   }, [fetchWatchlistData]);
 
   const handleWatchlistToggle = (toggledPlayerId, newWatchedStatus) => {
-    // If a player is removed from the watchlist (newWatchedStatus is false),
-    // filter them out from the local state to update the UI optimistically.
     if (!newWatchedStatus) {
       setWatchlist(prevWatchlist => prevWatchlist.filter(player => player._id !== toggledPlayerId));
     }
-    // If newWatchedStatus is true, it means it was added.
-    // However, this page primarily shows players already in the watchlist.
-    // Re-fetching might be an option if consistency is critical or if adds happen from elsewhere.
-    // For now, just removing is the primary concern for this page.
   };
 
-  if (loading) return <p role="status" style={{ textAlign: 'center', padding: '20px' }}>Loading watchlist...</p>;
-  if (error) return (
-      <div style={{ textAlign: 'center', padding: '20px', color: 'red' }} role="alert">
-          <p>Error: {error}</p>
-          <button onClick={fetchWatchlistData} style={{ marginTop: '10px' }}>Retry</button>
-      </div>
-  );
+  if (loading) {
+      return (
+        <Container className="d-flex justify-content-center align-items-center vh-50 mt-5">
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </Container>
+      );
+  }
 
-  if (watchlist.length === 0) return <p style={{ textAlign: 'center', padding: '20px' }}>Your watchlist is empty.</p>;
+  if (error) {
+      return (
+        <Container className="mt-4">
+             <Alert variant="danger" className="text-center">
+                <Alert.Heading>Error</Alert.Heading>
+                <p>{error}</p>
+                <Button variant="outline-danger" onClick={fetchWatchlistData}>Retry</Button>
+            </Alert>
+        </Container>
+      );
+  }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>My Watchlist</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
-        {watchlist.map(player => (
-          <div
-            key={player._id}
-            style={{
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              padding: '20px',
-              width: '300px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}
-          >
-            <h4 style={{ marginTop: '0', marginBottom: '10px' }}>{player.name || 'Unnamed Player'}</h4>
-            <p style={{ marginBottom: '5px' }}>Team: {player.team?.name || 'N/A'}</p>
-            <p style={{ marginBottom: '15px' }}>Nationality: {player.nationality || 'N/A'}</p>
-            <AddToWatchlistButton
-              playerId={player._id}
-              isInitiallyWatched={true} // All players on this page are initially watched
-              onToggle={(newStatus) => handleWatchlistToggle(player._id, newStatus)}
-            />
-          </div>
-        ))}
+    <Container className="mt-4">
+      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 className="h2">My Watchlist</h1>
       </div>
-    </div>
+
+      {watchlist.length === 0 ? (
+          <Alert variant="info" className="text-center">
+            Your watchlist is empty. <br/>
+            Go to <a href="/players" className="alert-link">Players</a> to add some.
+          </Alert>
+      ) : (
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {watchlist.map(player => (
+              <Col key={player._id}>
+                <Card className="h-100 shadow-sm">
+                  <Card.Body>
+                    <Card.Title>{player.name || 'Unnamed Player'}</Card.Title>
+                    <Card.Subtitle className="mb-2 text-muted">{player.team?.name || 'No Team'}</Card.Subtitle>
+                    <Card.Text>
+                        <strong>Nationality:</strong> {player.nationality || 'N/A'} <br />
+                        <strong>Position:</strong> {player.position || 'N/A'}
+                    </Card.Text>
+                    <AddToWatchlistButton
+                      playerId={player._id}
+                      isInitiallyWatched={true}
+                      onToggle={(newStatus) => handleWatchlistToggle(player._id, newStatus)}
+                    />
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+      )}
+    </Container>
   );
 };
 
