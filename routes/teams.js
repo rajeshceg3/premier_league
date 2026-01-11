@@ -3,13 +3,15 @@ const mongoose = require('mongoose');
 // Added for ObjectId validation
 const router = express.Router();
 const { Team, validateTeam } = require('../models/team');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
 router.get('/', async (req, res) => {
   const teams = await Team.find().select('-__v').sort('name');
   res.send(teams);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', [auth, admin], async (req, res) => {
   const { error } = validateTeam(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -22,7 +24,7 @@ router.post('/', async (req, res) => {
   res.send(team);
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', [auth, admin], async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     res.status(400).send('Invalid Team ID.');
     return;
@@ -45,7 +47,7 @@ router.put('/:id', async (req, res) => {
   res.send(team);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     res.status(400).send('Invalid Team ID.');
     return;
