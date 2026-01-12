@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 
 const AgentForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    // Add any other relevant fields for an agent
+    phone: '',
   });
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { id } = useParams(); // To get agent ID from URL for editing
+  const { id } = useParams();
 
   useEffect(() => {
-    if (id) { // If ID exists, we are editing, so fetch agent data
-      setIsLoading(true);
+    if (id) {
+      setLoading(true);
       const fetchAgentData = async () => {
         try {
           const token = localStorage.getItem('token');
@@ -25,28 +25,27 @@ const AgentForm = () => {
           });
           setFormData({
             name: res.data.name,
-            email: res.data.email,
-            // Set other fields from res.data
+            email: res.data.email || '',
+            phone: res.data.phone || '',
           });
-          setIsLoading(false);
         } catch (err) {
-          setError(err.response?.data?.message || 'Failed to fetch agent data.');
-          setIsLoading(false);
+          toast.error(err.response?.data?.message || 'Failed to fetch agent data.');
+          navigate('/agents');
+        } finally {
+          setLoading(false);
         }
       };
       fetchAgentData();
     }
-  }, [id]);
+  }, [id, navigate]);
 
-  const { name, email } = formData;
+  const { name, email, phone } = formData;
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async e => {
     e.preventDefault();
-    setError('');
-    setMessage('');
-    setIsLoading(true);
+    setLoading(true);
     const token = localStorage.getItem('token');
     const config = {
       headers: {
@@ -56,61 +55,90 @@ const AgentForm = () => {
     };
 
     try {
-      if (id) { // If ID exists, it's an update (PUT)
+      if (id) {
         await axios.put(`/api/agents/${id}`, formData, config);
-        setMessage('Agent updated successfully!');
-      } else { // Otherwise, it's a create (POST)
+        toast.success('Agent updated successfully!');
+      } else {
         await axios.post('/api/agents', formData, config);
-        setMessage('Agent added successfully!');
+        toast.success('Agent added successfully!');
       }
-
-      setTimeout(() => {
-        navigate('/agents'); // Redirect to agent list
-      }, 1500);
-
+      // Delay navigation slightly to allow toast to be seen
+      setTimeout(() => navigate('/agents'), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || (id ? 'Failed to update agent.' : 'Failed to add agent.'));
-      setIsLoading(false);
+      toast.error(err.response?.data?.message || (id ? 'Failed to update agent.' : 'Failed to add agent.'));
+      setLoading(false);
     }
   };
 
-  if (isLoading && id) return <p>Loading agent data for editing...</p>;
+  if (loading && id && !name) {
+      return (
+          <Container className="d-flex justify-content-center mt-5">
+              <Spinner animation="border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+              </Spinner>
+          </Container>
+      );
+  }
 
   return (
-    <form onSubmit={onSubmit}>
-      <h2>{id ? 'Edit Agent' : 'Add New Agent'}</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {message && <p style={{ color: 'green' }}>{message}</p>}
-      <div>
-        <label htmlFor="name">Name:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={name}
-          onChange={onChange}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="email">Email:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={email}
-          onChange={onChange}
-          required
-        />
-      </div>
-      {/* Add other form fields as necessary */}
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Submitting...' : (id ? 'Update Agent' : 'Add Agent')}
-      </button>
-      <button type="button" onClick={() => navigate('/agents')} disabled={isLoading}>
-        Cancel
-      </button>
-    </form>
+    <Container className="mt-4">
+      <Row className="justify-content-md-center">
+        <Col xs={12} md={8} lg={6}>
+          <Card className="shadow-sm">
+            <Card.Header as="h4" className="bg-warning text-dark text-center">
+              {id ? 'Edit Agent' : 'Register New Agent'}
+            </Card.Header>
+            <Card.Body>
+              <Form onSubmit={onSubmit}>
+                <Form.Group className="mb-3" controlId="name">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={name}
+                    onChange={onChange}
+                    required
+                    placeholder="e.g. Jorge Mendes"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="email">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={onChange}
+                    required
+                    placeholder="e.g. jorge@agency.com"
+                  />
+                </Form.Group>
+
+                 <Form.Group className="mb-3" controlId="phone">
+                  <Form.Label>Phone</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="phone"
+                    value={phone}
+                    onChange={onChange}
+                    placeholder="e.g. +44 7700 900000"
+                  />
+                </Form.Group>
+
+                <div className="d-grid gap-2">
+                  <Button variant="warning" type="submit" disabled={loading}>
+                     {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : (id ? 'Update Agent' : 'Register Agent')}
+                  </Button>
+                  <Button variant="outline-secondary" onClick={() => navigate('/agents')} disabled={loading}>
+                    Cancel
+                  </Button>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
