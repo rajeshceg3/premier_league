@@ -52,7 +52,7 @@ router.delete('/:id', [auth, admin], async (req, res) => {
     res.status(400).send('Invalid Team ID.');
     return;
   }
-  const team = await Team.findByIdAndRemove(req.params.id);
+  const team = await Team.findByIdAndDelete(req.params.id);
   if (!team) return res.status(404).send('Team ID not found');
   res.send(team);
 });

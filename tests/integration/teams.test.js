@@ -79,10 +79,7 @@ describe('Teams API', () => {
 
   describe('POST /api/teams', () => {
     const exec = async (teamData) => {
-      return request(server)
-        .post('/api/teams')
-        .set('x-auth-token', adminToken)
-        .send(teamData);
+      return request(server).post('/api/teams').set('x-auth-token', adminToken).send(teamData);
     };
 
     it('should return 200 and the team if it is valid and user is admin', async () => {

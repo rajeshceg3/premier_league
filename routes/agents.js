@@ -62,7 +62,7 @@ router.delete('/:id', async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).send('Invalid Agent ID.');
   }
-  const agent = await Agent.findByIdAndRemove(req.params.id).select('-__v');
+  const agent = await Agent.findByIdAndDelete(req.params.id).select('-__v');
   if (!agent) return res.status(404).send('The agent with the given ID was not found.');
   res.send(agent); // Conventionally, the deleted object is returned
 });

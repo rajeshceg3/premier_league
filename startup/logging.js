@@ -4,10 +4,7 @@ require('express-async-errors');
 module.exports = function () {
   winston.exceptions.handle(
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     }),
     new winston.transports.File({ filename: 'uncaughtExceptions.log' })
   );
@@ -27,10 +24,7 @@ module.exports = function () {
   if (process.env.NODE_ENV !== 'production') {
     winston.add(
       new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.colorize(),
-          winston.format.simple()
-        ),
+        format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
       })
     );
   }

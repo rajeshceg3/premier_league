@@ -11,5 +11,5 @@ module.exports = function (err, req, res, next) {
     },
   });
 
-  res.status(500).send('Something failed.');
+  res.status(500).json({ error: 'Something failed. Please try again later.' });
 };
