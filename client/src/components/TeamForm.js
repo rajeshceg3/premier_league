@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 
 const TeamForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     coach: '',
-    // Add any other relevant fields for a team
   });
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { id } = useParams(); // To get team ID from URL for editing
+  const { id } = useParams();
 
   useEffect(() => {
-    if (id) { // If ID exists, we are editing, so fetch team data
-      setIsLoading(true);
+    if (id) {
+      setLoading(true);
       const fetchTeamData = async () => {
         try {
           const token = localStorage.getItem('token');
@@ -26,12 +25,11 @@ const TeamForm = () => {
           setFormData({
             name: res.data.name,
             coach: res.data.coach,
-            // Set other fields from res.data
           });
-          setIsLoading(false);
+          setLoading(false);
         } catch (err) {
-          setError(err.response?.data?.message || 'Failed to fetch team data.');
-          setIsLoading(false);
+          toast.error(err.response?.data?.message || 'Failed to fetch team data.');
+          setLoading(false);
         }
       };
       fetchTeamData();
@@ -44,9 +42,7 @@ const TeamForm = () => {
 
   const onSubmit = async e => {
     e.preventDefault();
-    setError('');
-    setMessage('');
-    setIsLoading(true);
+    setLoading(true);
     const token = localStorage.getItem('token');
     const config = {
       headers: {
@@ -56,61 +52,78 @@ const TeamForm = () => {
     };
 
     try {
-      if (id) { // If ID exists, it's an update (PUT)
+      if (id) {
         await axios.put(`/api/teams/${id}`, formData, config);
-        setMessage('Team updated successfully!');
-      } else { // Otherwise, it's a create (POST)
+        toast.success('Team updated successfully!');
+      } else {
         await axios.post('/api/teams', formData, config);
-        setMessage('Team added successfully!');
+        toast.success('Team added successfully!');
       }
-
-      setTimeout(() => {
-        navigate('/teams'); // Redirect to team list
-      }, 1500);
-
+      setTimeout(() => navigate('/teams'), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || (id ? 'Failed to update team.' : 'Failed to add team.'));
-      setIsLoading(false);
+      toast.error(err.response?.data?.message || (id ? 'Failed to update team.' : 'Failed to add team.'));
+      setLoading(false);
     }
   };
 
-  if (isLoading && id) return <p>Loading team data for editing...</p>;
+  if (loading && id && !name) {
+    return (
+        <Container className="d-flex justify-content-center mt-5">
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </Container>
+    );
+  }
 
   return (
-    <form onSubmit={onSubmit}>
-      <h2>{id ? 'Edit Team' : 'Add New Team'}</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {message && <p style={{ color: 'green' }}>{message}</p>}
-      <div>
-        <label htmlFor="name">Name:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={name}
-          onChange={onChange}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="coach">Coach:</label>
-        <input
-          type="text"
-          id="coach"
-          name="coach"
-          value={coach}
-          onChange={onChange}
-           required // Add this line
-        />
-      </div>
-      {/* Add other form fields as necessary */}
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Submitting...' : (id ? 'Update Team' : 'Add Team')}
-      </button>
-      <button type="button" onClick={() => navigate('/teams')} disabled={isLoading}>
-        Cancel
-      </button>
-    </form>
+    <Container className="mt-4">
+      <Row className="justify-content-md-center">
+        <Col xs={12} md={8} lg={6}>
+          <Card className="shadow-sm">
+            <Card.Header as="h4" className="bg-primary text-white text-center">
+              {id ? 'Edit Team' : 'Register New Team'}
+            </Card.Header>
+            <Card.Body>
+              <Form onSubmit={onSubmit}>
+                <Form.Group className="mb-3" controlId="name">
+                  <Form.Label>Team Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={name}
+                    onChange={onChange}
+                    required
+                    placeholder="e.g. Manchester United"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="coach">
+                  <Form.Label>Coach</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="coach"
+                    value={coach}
+                    onChange={onChange}
+                    required
+                    placeholder="e.g. Erik ten Hag"
+                  />
+                </Form.Group>
+
+                <div className="d-grid gap-2">
+                  <Button variant="primary" type="submit" disabled={loading}>
+                    {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : (id ? 'Update Team' : 'Register Team')}
+                  </Button>
+                  <Button variant="outline-secondary" onClick={() => navigate('/teams')} disabled={loading}>
+                    Cancel
+                  </Button>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

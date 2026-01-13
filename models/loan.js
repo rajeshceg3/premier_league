@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 const moment = require('moment');
-const JoiObjectId = require('joi-objectid')(Joi); // Moved from validateLoan
+const JoiObjectId = require('joi-objectid')(Joi);
 
 const loanSchema = new mongoose.Schema({
   agent: {
@@ -38,6 +38,36 @@ const loanSchema = new mongoose.Schema({
     }),
     required: true,
   },
+  loaningTeam: {
+    type: new mongoose.Schema({
+      name: {
+        type: String,
+        required: true,
+        minlength: 4,
+        maxlength: 50,
+      },
+    }),
+    required: true,
+  },
+  borrowingTeam: {
+    type: new mongoose.Schema({
+      name: {
+        type: String,
+        required: true,
+        minlength: 4,
+        maxlength: 50,
+      },
+    }),
+    required: true,
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
   loanDate: {
     type: Date,
     required: true,
@@ -60,8 +90,8 @@ loanSchema.statics.lookup = function (agentId, playerId) {
 };
 
 loanSchema.methods.return = function () {
-  this.ReturnDate = new Date(); // Corrected to match schema: ReturnDate
-  const duration = moment().diff(this.loanDate, 'days'); // Calculate duration until now
+  this.ReturnDate = new Date();
+  const duration = moment().diff(this.loanDate, 'days');
   this.loanFee = duration * this.player.dailyLoanFee;
 };
 
@@ -69,11 +99,14 @@ const Loan = mongoose.model('Loan', loanSchema);
 
 function validateLoan(loan) {
   const schema = Joi.object({
-    // Use Joi.object() for modern Joi
-    agentId: JoiObjectId().required(), // Use JoiObjectId for validation
+    agentId: JoiObjectId(),
     playerId: JoiObjectId().required(),
+    loaningTeamId: JoiObjectId().required(),
+    borrowingTeamId: JoiObjectId().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
   });
-  return schema.validate(loan); // Use schema.validate()
+  return schema.validate(loan);
 }
 
 module.exports.Loan = Loan;
