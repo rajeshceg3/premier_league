@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import AddToWatchlistButton from './AddToWatchlistButton'; // Import AddToWatchlistButton
-import { getWatchlist } from '../services/apiClient'; // Import getWatchlist
+import { Table, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import AddToWatchlistButton from './AddToWatchlistButton';
+import { getWatchlist } from '../services/apiClient';
+import Loader from './common/Loader';
+import { toast } from 'react-toastify';
 
 const PlayerList = () => {
   const [players, setPlayers] = useState([]);
-  const [userWatchlistIds, setUserWatchlistIds] = useState(new Set()); // For storing IDs of watched players
+  const [userWatchlistIds, setUserWatchlistIds] = useState(new Set());
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -29,12 +32,10 @@ const PlayerList = () => {
 
         // Fetch user's watchlist
         try {
-          const watchlist = await getWatchlist(); // apiClient handles token
+          const watchlist = await getWatchlist();
           setUserWatchlistIds(new Set(watchlist.map(p => p._id)));
         } catch (watchlistError) {
           console.error("Failed to fetch user's watchlist", watchlistError);
-          // Not setting main error for this, but logging it.
-          // PlayerList can still function without watchlist info.
         }
 
         setLoading(false);
@@ -55,27 +56,43 @@ const PlayerList = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPlayers(players.filter(player => player._id !== id));
+        toast.success('Player deleted successfully');
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to delete player.');
+        toast.error(err.response?.data?.message || 'Failed to delete player.');
       }
     }
   };
 
-  if (loading) return <p>Loading players...</p>;
+  if (loading) return <Loader message="Loading players..." />;
 
   return (
-    <div>
-      <h2>Player Management</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <Link to="/players/new">Add New Player</Link>
-      {players.length === 0 && !loading && <p>No players found. Add one!</p>}
+    <Container className="mt-4">
+      <Row className="mb-3">
+        <Col>
+          <h2>Player Management</h2>
+        </Col>
+        <Col className="text-end">
+          <Link to="/players/new" className="btn btn-primary">
+            <i className="fas fa-plus"></i> Add New Player
+          </Link>
+        </Col>
+      </Row>
+
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      {players.length === 0 && !loading && (
+        <Alert variant="info" className="text-center">
+          No players found. Click "Add New Player" to get started.
+        </Alert>
+      )}
+
       {players.length > 0 && (
-        <table>
+        <Table striped bordered hover responsive>
           <thead>
             <tr>
               <th>Name</th>
-              <th>Position</th>
-              <th>Jersey Number</th>
+              <th>Team</th>
+              <th>Loan Cost</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -83,22 +100,28 @@ const PlayerList = () => {
             {players.map(player => (
               <tr key={player._id}>
                 <td>{player.name}</td>
-                <td>{player.position}</td>
-                <td>{player.jerseyNumber}</td>
+                <td>{player.team?.name || 'N/A'}</td>
+                <td>${player.loanCost || 0}</td>
                 <td>
-                  <Link to={`/players/edit/${player._id}`}>Edit</Link>
-                  <button onClick={() => handleDelete(player._id)}>Delete</button>
-                  <AddToWatchlistButton
-                    playerId={player._id}
-                    isInitiallyWatched={userWatchlistIds.has(player._id)}
-                  />
+                  <div className="d-flex gap-2">
+                    <Link to={`/players/edit/${player._id}`} className="btn btn-sm btn-outline-secondary">
+                      <i className="fas fa-edit"></i> Edit
+                    </Link>
+                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(player._id)}>
+                      <i className="fas fa-trash"></i> Delete
+                    </Button>
+                    <AddToWatchlistButton
+                      playerId={player._id}
+                      isInitiallyWatched={userWatchlistIds.has(player._id)}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
-    </div>
+    </Container>
   );
 };
 

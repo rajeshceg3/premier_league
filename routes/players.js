@@ -71,7 +71,7 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(400).send('Invalid Player ID.');
     return;
   }
-  const player = await Player.findByIdAndRemove(req.params.id);
+  const player = await Player.findByIdAndDelete(req.params.id);
   if (!player) return res.status(404).send('Player ID not found');
   res.send(player);
 });

@@ -2,7 +2,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || '/api', // Use env var or default to relative path
+  baseURL: process.env.REACT_APP_API_URL || '/api',
+  timeout: 10000, // 10 seconds timeout
 });
 
 // Response interceptor to handle errors globally
@@ -17,19 +18,22 @@ apiClient.interceptors.response.use(
       error.response.status < 500;
 
     if (!expectedError) {
-      // Unexpected errors (network, server 5xx)
       console.error('An unexpected error occurred:', error);
-      toast.error('An unexpected error occurred. Please try again later.');
+      if (error.code === 'ECONNABORTED') {
+          toast.error('Request timed out. Please try again.');
+      } else if (error.message === 'Network Error') {
+          toast.error('Network error. Please check your internet connection.');
+      } else {
+          toast.error('An unexpected error occurred. Please try again later.');
+      }
     } else {
-      // Expected errors (4xx)
       if (error.response.status === 401) {
-         // Optionally redirect to login or show specific message
          toast.error('Session expired or unauthorized. Please login.');
-         // Potential: window.location.href = '/login'; (Use with caution in SPA)
       } else if (error.response.status === 403) {
          toast.error('You do not have permission to perform this action.');
+      } else if (error.response.status === 429) {
+         toast.error('Too many requests. Please try again later.');
       } else {
-         // Other 4xx errors
          toast.error(error.response.data || 'An error occurred.');
       }
     }
@@ -38,7 +42,6 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Function to set the auth token globally for all apiClient requests
 export const setAuthToken = (token) => {
   if (token) {
     apiClient.defaults.headers.common['x-auth-token'] = token;
@@ -47,13 +50,11 @@ export const setAuthToken = (token) => {
   }
 };
 
-// Example function (mentioned as existing in the prompt)
 export const getTeams = async () => {
   const response = await apiClient.get('/teams');
   return response.data;
 };
 
-// Watchlist functions
 export const getWatchlist = async () => {
   const response = await apiClient.get('/users/watchlist');
   return response.data;
