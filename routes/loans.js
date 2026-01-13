@@ -3,6 +3,7 @@ const router = require('express').Router();
 const { Loan, validateLoan } = require('../models/loan');
 const { Player } = require('../models/player');
 const { Agent } = require('../models/agent');
+const { Team } = require('../models/team');
 const auth = require('../middleware/auth');
 
 router.get('/', async (req, res) => {
@@ -17,10 +18,13 @@ router.post('/', auth, async (req, res) => {
     return;
   }
 
-  const agent = await Agent.findById(req.body.agentId);
-  if (!agent) {
-    res.status(400).send('Agent ID not found');
-    return;
+  let agent;
+  if (req.body.agentId) {
+    agent = await Agent.findById(req.body.agentId);
+    if (!agent) {
+      res.status(400).send('Agent ID not found');
+      return;
+    }
   }
 
   const player = await Player.findById(req.body.playerId);
@@ -29,23 +33,50 @@ router.post('/', auth, async (req, res) => {
     return;
   }
 
+  const loaningTeam = await Team.findById(req.body.loaningTeamId);
+  if (!loaningTeam) {
+    res.status(400).send('Loaning Team ID not found');
+    return;
+  }
+
+  const borrowingTeam = await Team.findById(req.body.borrowingTeamId);
+  if (!borrowingTeam) {
+    res.status(400).send('Borrowing Team ID not found');
+    return;
+  }
+
   if (player.loanDaysRemaining === 0) {
     res.status(400).send('Player not available for loan');
     return;
   }
 
-  const loan = new Loan({
-    agent: {
-      _id: agent._id,
-      name: agent.name,
-      phone: agent.phone,
-    },
+  const loanData = {
     player: {
       _id: player._id,
       name: player.name,
       dailyLoanFee: player.loanCost,
     },
-  });
+    loaningTeam: {
+      _id: loaningTeam._id,
+      name: loaningTeam.name,
+    },
+    borrowingTeam: {
+      _id: borrowingTeam._id,
+      name: borrowingTeam.name,
+    },
+    startDate: req.body.startDate,
+    endDate: req.body.endDate,
+  };
+
+  if (agent) {
+    loanData.agent = {
+      _id: agent._id,
+      name: agent.name,
+      phone: agent.phone,
+    };
+  }
+
+  const loan = new Loan(loanData);
 
   // Replaced Fawn with native transactions or sequential operations
   // Note: For true ACID transactions, a Replica Set is required.

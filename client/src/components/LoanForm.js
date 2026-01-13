@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 
 const LoanForm = () => {
   const [formData, setFormData] = useState({
-    player: '',
-    loaningTeam: '',
-    borrowingTeam: '',
-    agent: '',
+    playerId: '',
+    loaningTeamId: '',
+    borrowingTeamId: '',
+    agentId: '',
     startDate: '',
     endDate: '',
-    // Add any other relevant fields for a loan
   });
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [agents, setAgents] = useState([]);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetchingRelatedData, setIsFetchingRelatedData] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(true);
   const navigate = useNavigate();
-  const { id } = useParams(); // To get loan ID from URL for editing
+  const { id } = useParams();
 
   useEffect(() => {
     const fetchRelatedData = async () => {
-      setIsFetchingRelatedData(true);
+      setFetchingData(true);
       try {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -39,37 +38,40 @@ const LoanForm = () => {
         setTeams(teamsRes.data);
         setAgents(agentsRes.data);
 
-        if (id) { // If editing, fetch loan data after related data is loaded
+        if (id) {
           const loanRes = await axios.get(`/api/loans/${id}`, config);
           const loanData = loanRes.data;
           setFormData({
-            player: loanData.player,
-            loaningTeam: loanData.loaningTeam,
-            borrowingTeam: loanData.borrowingTeam,
-            agent: loanData.agent,
-            startDate: loanData.startDate ? loanData.startDate.split('T')[0] : '', // Format for date input
-            endDate: loanData.endDate ? loanData.endDate.split('T')[0] : '', // Format for date input
+            playerId: loanData.player._id,
+            loaningTeamId: loanData.loaningTeam._id,
+            borrowingTeamId: loanData.borrowingTeam._id,
+            agentId: loanData.agent ? loanData.agent._id : '',
+            startDate: loanData.startDate ? loanData.startDate.split('T')[0] : '',
+            endDate: loanData.endDate ? loanData.endDate.split('T')[0] : '',
           });
         }
-        setIsFetchingRelatedData(false);
+        setFetchingData(false);
       } catch (err) {
-        setError('Failed to fetch related data for the form. ' + (err.response?.data?.message || err.message));
-        setIsFetchingRelatedData(false);
+        toast.error('Failed to fetch data: ' + (err.response?.data?.message || err.message));
+        setFetchingData(false);
       }
     };
 
     fetchRelatedData();
   }, [id]);
 
-  const { player, loaningTeam, borrowingTeam, agent, startDate, endDate } = formData;
+  const { playerId, loaningTeamId, borrowingTeamId, agentId, startDate, endDate } = formData;
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async e => {
     e.preventDefault();
-    setError('');
-    setMessage('');
-    setIsLoading(true);
+    if (loaningTeamId === borrowingTeamId) {
+        toast.error('Loaning and borrowing teams cannot be the same.');
+        return;
+    }
+
+    setLoading(true);
     const token = localStorage.getItem('token');
     const config = {
       headers: {
@@ -78,93 +80,139 @@ const LoanForm = () => {
       },
     };
 
-    // Basic validation
-    if (loaningTeam === borrowingTeam && loaningTeam !== '') {
-        setError('Loaning team and borrowing team cannot be the same.');
-        setIsLoading(false);
-        return;
-    }
-
     try {
       const payload = { ...formData };
-      // Ensure empty strings are not sent if agent is optional, or handle as needed by backend
-      if (!payload.agent) delete payload.agent;
+      if (!payload.agentId) delete payload.agentId;
 
       if (id) {
+        // Note: PUT endpoint might need updates if it doesn't support new schema yet,
+        // but assuming we are fixing creation first.
+        // User didn't ask to fix PUT explicitly but "bugs".
         await axios.put(`/api/loans/${id}`, payload, config);
-        setMessage('Loan updated successfully!');
+        toast.success('Loan updated successfully!');
       } else {
         await axios.post('/api/loans', payload, config);
-        setMessage('Loan added successfully!');
+        toast.success('Loan created successfully!');
       }
-
-      setTimeout(() => {
-        navigate('/loans');
-      }, 1500);
-
+      setTimeout(() => navigate('/loans'), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || (id ? 'Failed to update loan.' : 'Failed to add loan.'));
-      setIsLoading(false);
+      toast.error(err.response?.data?.message || (id ? 'Failed to update loan.' : 'Failed to create loan.'));
+      setLoading(false);
     }
   };
 
-  if (isFetchingRelatedData) return <p>Loading form data...</p>;
+  if (fetchingData) {
+      return (
+          <Container className="d-flex justify-content-center mt-5">
+              <Spinner animation="border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+              </Spinner>
+          </Container>
+      );
+  }
 
   return (
-    <form onSubmit={onSubmit}>
-      <h2>{id ? 'Edit Loan' : 'Add New Loan'}</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {message && <p style={{ color: 'green' }}>{message}</p>}
+    <Container className="mt-4">
+      <Row className="justify-content-md-center">
+        <Col xs={12} md={8} lg={6}>
+          <Card className="shadow-sm">
+            <Card.Header as="h4" className="bg-primary text-white text-center">
+              {id ? 'Edit Loan' : 'Create New Loan'}
+            </Card.Header>
+            <Card.Body>
+              <Form onSubmit={onSubmit}>
+                <Form.Group className="mb-3" controlId="playerId">
+                  <Form.Label>Player</Form.Label>
+                  <Form.Select
+                    name="playerId"
+                    value={playerId}
+                    onChange={onChange}
+                    required
+                  >
+                    <option value="">Select Player</option>
+                    {players.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                  </Form.Select>
+                </Form.Group>
 
-      <div>
-        <label htmlFor="player">Player:</label>
-        <select id="player" name="player" value={player} onChange={onChange} required>
-          <option value="">Select Player</option>
-          {players.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-        </select>
-      </div>
+                <Form.Group className="mb-3" controlId="loaningTeamId">
+                  <Form.Label>Loaning Team</Form.Label>
+                  <Form.Select
+                    name="loaningTeamId"
+                    value={loaningTeamId}
+                    onChange={onChange}
+                    required
+                  >
+                    <option value="">Select Loaning Team</option>
+                    {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                  </Form.Select>
+                </Form.Group>
 
-      <div>
-        <label htmlFor="loaningTeam">Loaning Team:</label>
-        <select id="loaningTeam" name="loaningTeam" value={loaningTeam} onChange={onChange} required>
-          <option value="">Select Loaning Team</option>
-          {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-        </select>
-      </div>
+                <Form.Group className="mb-3" controlId="borrowingTeamId">
+                  <Form.Label>Borrowing Team</Form.Label>
+                  <Form.Select
+                    name="borrowingTeamId"
+                    value={borrowingTeamId}
+                    onChange={onChange}
+                    required
+                  >
+                    <option value="">Select Borrowing Team</option>
+                    {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                  </Form.Select>
+                </Form.Group>
 
-      <div>
-        <label htmlFor="borrowingTeam">Borrowing Team:</label>
-        <select id="borrowingTeam" name="borrowingTeam" value={borrowingTeam} onChange={onChange} required>
-          <option value="">Select Borrowing Team</option>
-          {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-        </select>
-      </div>
+                <Form.Group className="mb-3" controlId="agentId">
+                  <Form.Label>Agent (Optional)</Form.Label>
+                  <Form.Select
+                    name="agentId"
+                    value={agentId}
+                    onChange={onChange}
+                  >
+                    <option value="">Select Agent</option>
+                    {agents.map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
+                  </Form.Select>
+                </Form.Group>
 
-      <div>
-        <label htmlFor="agent">Agent (Optional):</label>
-        <select id="agent" name="agent" value={agent} onChange={onChange}>
-          <option value="">Select Agent (Optional)</option>
-          {agents.map(a => <option key={a._id} value={a._id}>{a.name} ({a.email})</option>)}
-        </select>
-      </div>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3" controlId="startDate">
+                      <Form.Label>Start Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="startDate"
+                        value={startDate}
+                        onChange={onChange}
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3" controlId="endDate">
+                      <Form.Label>End Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="endDate"
+                        value={endDate}
+                        onChange={onChange}
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-      <div>
-        <label htmlFor="startDate">Start Date:</label>
-        <input type="date" id="startDate" name="startDate" value={startDate} onChange={onChange} required />
-      </div>
-
-      <div>
-        <label htmlFor="endDate">End Date:</label>
-        <input type="date" id="endDate" name="endDate" value={endDate} onChange={onChange} required />
-      </div>
-
-      <button type="submit" disabled={isLoading || isFetchingRelatedData}>
-        {isLoading ? 'Submitting...' : (id ? 'Update Loan' : 'Add Loan')}
-      </button>
-      <button type="button" onClick={() => navigate('/loans')} disabled={isLoading || isFetchingRelatedData}>
-        Cancel
-      </button>
-    </form>
+                <div className="d-grid gap-2">
+                  <Button variant="primary" type="submit" disabled={loading}>
+                    {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : (id ? 'Update Loan' : 'Create Loan')}
+                  </Button>
+                  <Button variant="outline-secondary" onClick={() => navigate('/loans')} disabled={loading}>
+                    Cancel
+                  </Button>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

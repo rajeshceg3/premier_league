@@ -49,6 +49,14 @@ describe('/api/returns', () => {
         name: '12345',
         phone: '12345',
       },
+      loaningTeam: {
+        name: 'Loaning Team',
+      },
+      borrowingTeam: {
+        name: 'Borrowing Team',
+      },
+      startDate: new Date(),
+      endDate: moment().add(30, 'days').toDate(),
       loanDate: new Date()
     });
     await loan.save();

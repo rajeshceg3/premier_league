@@ -7,6 +7,7 @@ const { Team } = require('../../models/team');
 const { Player } = require('../../models/player');
 const { Agent } = require('../../models/agent');
 const { Loan } = require('../../models/loan');
+const moment = require('moment');
 
 let server;
 let mongoServer;
@@ -187,7 +188,11 @@ describe('Security Integration Tests', () => {
       it('should return 401 if client is not logged in', async () => {
         const res = await request(server).post('/api/loans').send({
             agentId: agent._id,
-            playerId: player._id
+            playerId: player._id,
+            loaningTeamId: team._id,
+            borrowingTeamId: team._id,
+            startDate: new Date(),
+            endDate: moment().add(1, 'month').toDate()
         });
         expect(res.status).toBe(401);
       });
@@ -198,7 +203,11 @@ describe('Security Integration Tests', () => {
             .set('x-auth-token', userToken)
             .send({
                 agentId: agent._id,
-                playerId: player._id
+                playerId: player._id,
+                loaningTeamId: team._id,
+                borrowingTeamId: team._id,
+                startDate: new Date(),
+                endDate: moment().add(1, 'month').toDate()
             });
         expect(res.status).toBe(200);
       });
