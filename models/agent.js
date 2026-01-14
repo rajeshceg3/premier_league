@@ -8,6 +8,12 @@ const agentSchema = new mongoose.Schema({
     minlength: 4,
     maxlength: 50,
   },
+  email: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 255,
+  },
   phone: {
     type: String,
     required: true,
@@ -26,6 +32,7 @@ function validateAgent(agent) {
   const schema = Joi.object({
     // Use Joi.object()
     name: Joi.string().min(4).max(50).required(),
+    email: Joi.string().min(5).max(255).required().email(),
     phone: Joi.string().min(4).max(50).required(),
     isPremium: Joi.boolean(),
   });

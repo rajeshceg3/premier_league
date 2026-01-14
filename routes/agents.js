@@ -1,22 +1,23 @@
 const express = require('express');
-
+const auth = require('../middleware/auth');
 const router = express.Router();
 const mongoose = require('mongoose'); // Required for validating ObjectId
 const { Agent, validateAgent } = require('../models/agent');
 
 // GET /api/agents - Get all agents
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   const agents = await Agent.find().select('-__v').sort('name');
   res.send(agents);
 });
 
 // POST /api/agents - Create a new agent
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   const { error } = validateAgent(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   let agent = new Agent({
     name: req.body.name,
+    email: req.body.email,
     phone: req.body.phone,
     isPremium: req.body.isPremium, // isPremium is optional, defaults to false if not provided
   });
@@ -35,7 +36,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/agents/:id - Update an existing agent by ID
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).send('Invalid Agent ID.');
   }
@@ -47,6 +48,7 @@ router.put('/:id', async (req, res) => {
     req.params.id,
     {
       name: req.body.name,
+      email: req.body.email,
       phone: req.body.phone,
       isPremium: req.body.isPremium,
     },
@@ -58,11 +60,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/agents/:id - Delete an agent by ID
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).send('Invalid Agent ID.');
   }
-  const agent = await Agent.findByIdAndRemove(req.params.id).select('-__v');
+  const agent = await Agent.findByIdAndDelete(req.params.id).select('-__v');
   if (!agent) return res.status(404).send('The agent with the given ID was not found.');
   res.send(agent); // Conventionally, the deleted object is returned
 });
