@@ -179,6 +179,7 @@ describe('Security Integration Tests', () => {
 
         agent = new Agent({
             name: 'Agent1',
+            email: 'agent@example.com',
             phone: '1234567890'
         });
         await agent.save();

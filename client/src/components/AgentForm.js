@@ -62,8 +62,7 @@ const AgentForm = () => {
         await axios.post('/api/agents', formData, config);
         toast.success('Agent added successfully!');
       }
-      // Delay navigation slightly to allow toast to be seen
-      setTimeout(() => navigate('/agents'), 1500);
+      navigate('/agents');
     } catch (err) {
       toast.error(err.response?.data?.message || (id ? 'Failed to update agent.' : 'Failed to add agent.'));
       setLoading(false);

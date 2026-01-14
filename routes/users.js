@@ -33,7 +33,7 @@ router.post('/watchlist/:playerId', auth, async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).send('User not found.');
 
-    if (user.watchlist.includes(player._id)) {
+    if (user.watchlist.some((id) => id.equals(player._id))) {
       return res.status(400).send('Player already in watchlist.');
     }
 

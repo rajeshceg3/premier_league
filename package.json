@@ -38,6 +38,7 @@
     "moment": "^2.29.3",
     "mongoose": "^6.3.6",
     "nodemon": "^2.0.16",
+    "playwright": "^1.57.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {
@@ -49,6 +50,6 @@
     "jest": "^27.0.0",
     "mongodb-memory-server": "^11.0.1",
     "prettier": "^3.5.3",
-    "supertest": "^6.0.0"
+    "supertest": "^6.3.4"
   }
 }
