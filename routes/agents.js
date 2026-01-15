@@ -1,8 +1,9 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
-const router = express.Router();
-const mongoose = require('mongoose'); // Required for validating ObjectId
 const { Agent, validateAgent } = require('../models/agent');
+
+const router = express.Router();
 
 // GET /api/agents - Get all agents
 router.get('/', auth, async (req, res) => {
