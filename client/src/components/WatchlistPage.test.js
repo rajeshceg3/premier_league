@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import WatchlistPage from './WatchlistPage';
 import { getWatchlist, removeFromWatchlist } from '../services/apiClient';
@@ -70,12 +70,10 @@ describe('WatchlistPage', () => {
     // We can find the element with text "Player One", then traverse up to the card body
     // Or we can assume the button is in the same container.
     // A robust way:
-    const playerOneNameElement = screen.getByText('Player One');
-    // The card body contains the name and the button.
-    // We can use `closest` or just search within the screen if we assume unique names.
-    // But let's be precise.
-    const cardBody = playerOneNameElement.closest('.card-body');
-    const playerOneRemoveButton = within(cardBody).getByRole('button', { name: /remove from watchlist/i });
+    // The mock data returns Player One first, then Player Two.
+    // So the first "Remove" button corresponds to Player One.
+    const removeButtons = screen.getAllByRole('button', { name: /remove from watchlist/i });
+    const playerOneRemoveButton = removeButtons[0];
 
     fireEvent.click(playerOneRemoveButton);
 

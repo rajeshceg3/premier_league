@@ -38,7 +38,6 @@ jobs:
         env:
           NODE_ENV: test
           # In a real scenario, use ${{ secrets.TEST_JWT_PRIVATE_KEY }}
-          # Hardcoded here ONLY for isolated testing environment
           jwtPrivateKey: "test_private_key_for_ci_only"
 
       # Frontend Checks
@@ -46,6 +45,11 @@ jobs:
         run: |
           cd client
           npm ci
+
+      - name: Lint Client
+        run: |
+          cd client
+          npm run lint
 
       - name: Test Client
         run: |
@@ -117,9 +121,25 @@ jobs:
 
       # Post-build scan of the container image
       - name: Run Trivy Vulnerability Scanner (Image)
-        uses: aquasecurity/trivy-action@0.33.1 # Pinned version for security
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
           format: 'table'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [build-and-publish]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy Trigger (Simulation)
+        run: |
+          echo "🚨 STARTING PRODUCTION DEPLOYMENT 🚨"
+          echo "Target: Container Platform (e.g., Render/Azure)"
+          echo "Artifact: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}"
+          echo "Action: Triggering Webhook..."
+          sleep 2
+          echo "✅ Deployment signal sent."

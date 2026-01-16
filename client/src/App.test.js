@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
+jest.mock('axios');
+
 // Manually mock matchMedia for this test file as well to ensure it overrides any global issues or conflicts
 window.matchMedia = window.matchMedia || function() {
   return {

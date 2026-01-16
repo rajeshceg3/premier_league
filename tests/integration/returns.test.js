@@ -1,10 +1,10 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server'); // Use MMS
+const moment = require('moment');
 const { Loan } = require('../../models/loan');
 const { Player } = require('../../models/player');
 const { User } = require('../../models/user');
-const moment = require('moment');
 
 let server;
 let mongoServer;
@@ -29,7 +29,7 @@ describe('/api/returns', () => {
   });
 
   beforeEach(async () => {
-     // Clear collections
+    // Clear collections
     await Loan.deleteMany({});
     await Player.deleteMany({});
     await User.deleteMany({});
@@ -57,7 +57,7 @@ describe('/api/returns', () => {
       },
       startDate: new Date(),
       endDate: moment().add(30, 'days').toDate(),
-      loanDate: new Date()
+      loanDate: new Date(),
     });
     await loan.save();
     loanId = loan._id;
@@ -66,10 +66,7 @@ describe('/api/returns', () => {
   // No afterEach server.close() needed because we handle it in afterAll and keep server alive for performance
 
   const exec = () => {
-    return request(server)
-      .post('/api/returns')
-      .set('x-auth-token', token)
-      .send({ loanId });
+    return request(server).post('/api/returns').set('x-auth-token', token).send({ loanId });
   };
 
   it('should return 400 if loanId is not provided', async () => {
