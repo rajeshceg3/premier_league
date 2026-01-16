@@ -1,20 +1,17 @@
-
 const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const moment = require('moment');
 const { User } = require('../../models/user');
 const { Team } = require('../../models/team');
 const { Player } = require('../../models/player');
 const { Agent } = require('../../models/agent');
 const { Loan } = require('../../models/loan');
-const moment = require('moment');
 
 let server;
 let mongoServer;
 let adminToken;
 let userToken;
-let adminId;
-let userId;
 
 describe('Security Integration Tests', () => {
   beforeAll(async () => {
@@ -45,7 +42,6 @@ describe('Security Integration Tests', () => {
       isAdmin: true,
     });
     await admin.save();
-    adminId = admin._id;
     adminToken = admin.createAuthToken();
 
     // Create Regular User
@@ -56,7 +52,6 @@ describe('Security Integration Tests', () => {
       isAdmin: false,
     });
     await user.save();
-    userId = user._id;
     userToken = user.createAuthToken();
   });
 
@@ -69,7 +64,9 @@ describe('Security Integration Tests', () => {
   describe('Teams Routes Security', () => {
     describe('POST /api/teams', () => {
       it('should return 401 if client is not logged in', async () => {
-        const res = await request(server).post('/api/teams').send({ name: 'New Team', coach: 'Coach' });
+        const res = await request(server)
+          .post('/api/teams')
+          .send({ name: 'New Team', coach: 'Coach' });
         expect(res.status).toBe(401);
       });
 
@@ -91,69 +88,73 @@ describe('Security Integration Tests', () => {
     });
 
     describe('PUT /api/teams/:id', () => {
-        let team;
-        beforeEach(async () => {
-            team = new Team({ name: 'Team1', coach: 'Coach1' });
-            await team.save();
-        });
+      let team;
+      beforeEach(async () => {
+        team = new Team({ name: 'Team1', coach: 'Coach1' });
+        await team.save();
+      });
 
-        it('should return 401 if not logged in', async () => {
-            const res = await request(server).put(`/api/teams/${team._id}`).send({ name: 'Team2', coach: 'Coach2' });
-            expect(res.status).toBe(401);
-        });
+      it('should return 401 if not logged in', async () => {
+        const res = await request(server)
+          .put(`/api/teams/${team._id}`)
+          .send({ name: 'Team2', coach: 'Coach2' });
+        expect(res.status).toBe(401);
+      });
 
-        it('should return 403 if not admin', async () => {
-            const res = await request(server).put(`/api/teams/${team._id}`).set('x-auth-token', userToken).send({ name: 'Team2', coach: 'Coach2' });
-            expect(res.status).toBe(403);
-        });
+      it('should return 403 if not admin', async () => {
+        const res = await request(server)
+          .put(`/api/teams/${team._id}`)
+          .set('x-auth-token', userToken)
+          .send({ name: 'Team2', coach: 'Coach2' });
+        expect(res.status).toBe(403);
+      });
     });
 
     describe('DELETE /api/teams/:id', () => {
-        let team;
-        beforeEach(async () => {
-            team = new Team({ name: 'Team1', coach: 'Coach1' });
-            await team.save();
-        });
+      let team;
+      beforeEach(async () => {
+        team = new Team({ name: 'Team1', coach: 'Coach1' });
+        await team.save();
+      });
 
-        it('should return 401 if not logged in', async () => {
-            const res = await request(server).delete(`/api/teams/${team._id}`);
-            expect(res.status).toBe(401);
-        });
+      it('should return 401 if not logged in', async () => {
+        const res = await request(server).delete(`/api/teams/${team._id}`);
+        expect(res.status).toBe(401);
+      });
 
-        it('should return 403 if not admin', async () => {
-            const res = await request(server).delete(`/api/teams/${team._id}`).set('x-auth-token', userToken);
-            expect(res.status).toBe(403);
-        });
+      it('should return 403 if not admin', async () => {
+        const res = await request(server)
+          .delete(`/api/teams/${team._id}`)
+          .set('x-auth-token', userToken);
+        expect(res.status).toBe(403);
+      });
     });
   });
 
   describe('Players Routes Security', () => {
     let team;
     beforeEach(async () => {
-        team = new Team({ name: 'Team1', coach: 'Coach1' });
-        await team.save();
+      team = new Team({ name: 'Team1', coach: 'Coach1' });
+      await team.save();
     });
 
     describe('POST /api/players', () => {
       it('should return 401 if client is not logged in', async () => {
         const res = await request(server).post('/api/players').send({
-            name: 'Player1',
-            teamId: team._id,
-            loanDaysRemaining: 10,
-            loanCost: 100
+          name: 'Player1',
+          teamId: team._id,
+          loanDaysRemaining: 10,
+          loanCost: 100,
         });
         expect(res.status).toBe(401);
       });
 
       it('should return 200 if client is logged in (regular user)', async () => {
-        const res = await request(server)
-          .post('/api/players')
-          .set('x-auth-token', userToken)
-          .send({
-            name: 'Player1',
-            teamId: team._id,
-            loanDaysRemaining: 10,
-            loanCost: 100
+        const res = await request(server).post('/api/players').set('x-auth-token', userToken).send({
+          name: 'Player1',
+          teamId: team._id,
+          loanDaysRemaining: 10,
+          loanCost: 100,
         });
         expect(res.status).toBe(200);
       });
@@ -166,50 +167,52 @@ describe('Security Integration Tests', () => {
     let team;
 
     beforeEach(async () => {
-        team = new Team({ name: 'Team1', coach: 'Coach1' });
-        await team.save();
+      team = new Team({ name: 'Team1', coach: 'Coach1' });
+      await team.save();
 
-        player = new Player({
-            name: 'Player1',
-            team: { _id: team._id, name: team.name, coach: team.coach },
-            loanDaysRemaining: 10,
-            loanCost: 100
-        });
-        await player.save();
+      player = new Player({
+        name: 'Player1',
+        team: { _id: team._id, name: team.name, coach: team.coach },
+        loanDaysRemaining: 10,
+        loanCost: 100,
+      });
+      await player.save();
 
-        agent = new Agent({
-            name: 'Agent1',
-            email: 'agent@example.com',
-            phone: '1234567890'
-        });
-        await agent.save();
+      agent = new Agent({
+        name: 'Agent1',
+        email: 'agent@example.com',
+        phone: '1234567890',
+      });
+      await agent.save();
     });
 
     describe('POST /api/loans', () => {
       it('should return 401 if client is not logged in', async () => {
-        const res = await request(server).post('/api/loans').send({
+        const res = await request(server)
+          .post('/api/loans')
+          .send({
             agentId: agent._id,
             playerId: player._id,
             loaningTeamId: team._id,
             borrowingTeamId: team._id,
             startDate: new Date(),
-            endDate: moment().add(1, 'month').toDate()
-        });
+            endDate: moment().add(1, 'month').toDate(),
+          });
         expect(res.status).toBe(401);
       });
 
       it('should return 200 if client is logged in', async () => {
         const res = await request(server)
-            .post('/api/loans')
-            .set('x-auth-token', userToken)
-            .send({
-                agentId: agent._id,
-                playerId: player._id,
-                loaningTeamId: team._id,
-                borrowingTeamId: team._id,
-                startDate: new Date(),
-                endDate: moment().add(1, 'month').toDate()
-            });
+          .post('/api/loans')
+          .set('x-auth-token', userToken)
+          .send({
+            agentId: agent._id,
+            playerId: player._id,
+            loaningTeamId: team._id,
+            borrowingTeamId: team._id,
+            startDate: new Date(),
+            endDate: moment().add(1, 'month').toDate(),
+          });
         expect(res.status).toBe(200);
       });
     });
