@@ -4,6 +4,7 @@
   "description": "An app for managing the player loans in Premier league",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "jest --detectOpenHandles --forceExit --testPathIgnorePatterns client/",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
