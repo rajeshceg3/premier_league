@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -19,10 +19,7 @@ const AgentForm = () => {
       setLoading(true);
       const fetchAgentData = async () => {
         try {
-          const token = localStorage.getItem('token');
-          const res = await axios.get(`/api/agents/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await apiClient.get(`/agents/${id}`);
           setFormData({
             name: res.data.name,
             email: res.data.email || '',
@@ -46,20 +43,13 @@ const AgentForm = () => {
   const onSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    };
 
     try {
       if (id) {
-        await axios.put(`/api/agents/${id}`, formData, config);
+        await apiClient.put(`/agents/${id}`, formData);
         toast.success('Agent updated successfully!');
       } else {
-        await axios.post('/api/agents', formData, config);
+        await apiClient.post('/agents', formData);
         toast.success('Agent added successfully!');
       }
       navigate('/agents');
