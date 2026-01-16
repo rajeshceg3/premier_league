@@ -33,5 +33,9 @@ USER nodejs
 # Expose the application port
 EXPOSE 3900
 
+# Health Check (Uses native Node to avoid external dependencies like curl/wget)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3900', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode); process.exit(0)}).on('error', (e) => {console.error(e); process.exit(1)})"
+
 # Start the application
 CMD ["npm", "start"]
