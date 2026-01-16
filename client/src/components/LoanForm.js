@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -25,13 +25,10 @@ const LoanForm = () => {
     const fetchRelatedData = async () => {
       setFetchingData(true);
       try {
-        const token = localStorage.getItem('token');
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-
         const [playersRes, teamsRes, agentsRes] = await Promise.all([
-          axios.get('/api/players', config),
-          axios.get('/api/teams', config),
-          axios.get('/api/agents', config),
+          apiClient.get('/players'),
+          apiClient.get('/teams'),
+          apiClient.get('/agents'),
         ]);
 
         setPlayers(playersRes.data);
@@ -39,7 +36,7 @@ const LoanForm = () => {
         setAgents(agentsRes.data);
 
         if (id) {
-          const loanRes = await axios.get(`/api/loans/${id}`, config);
+          const loanRes = await apiClient.get(`/loans/${id}`);
           const loanData = loanRes.data;
           setFormData({
             playerId: loanData.player._id,
@@ -52,6 +49,7 @@ const LoanForm = () => {
         }
         setFetchingData(false);
       } catch (err) {
+        console.error("Error fetching loan data", err);
         toast.error('Failed to fetch data: ' + (err.response?.data?.message || err.message));
         setFetchingData(false);
       }
@@ -72,29 +70,19 @@ const LoanForm = () => {
     }
 
     setLoading(true);
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    };
 
     try {
       const payload = { ...formData };
       if (!payload.agentId) delete payload.agentId;
 
       if (id) {
-        // Note: PUT endpoint might need updates if it doesn't support new schema yet,
-        // but assuming we are fixing creation first.
-        // User didn't ask to fix PUT explicitly but "bugs".
-        await axios.put(`/api/loans/${id}`, payload, config);
+        await apiClient.put(`/loans/${id}`, payload);
         toast.success('Loan updated successfully!');
       } else {
-        await axios.post('/api/loans', payload, config);
+        await apiClient.post('/loans', payload);
         toast.success('Loan created successfully!');
       }
-      setTimeout(() => navigate('/loans'), 1500);
+      navigate('/loans');
     } catch (err) {
       toast.error(err.response?.data?.message || (id ? 'Failed to update loan.' : 'Failed to create loan.'));
       setLoading(false);

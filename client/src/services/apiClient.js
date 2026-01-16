@@ -22,16 +22,17 @@ apiClient.interceptors.response.use(
       toast.error('An unexpected error occurred. Please try again later.');
     } else {
       // Expected errors (4xx)
+      // Note: We allow local catch blocks to handle specific validation errors by rejecting the promise.
+      // Global handling is reserved for auth issues (401/403).
+
       if (error.response.status === 401) {
-         // Optionally redirect to login or show specific message
          toast.error('Session expired or unauthorized. Please login.');
-         // Potential: window.location.href = '/login'; (Use with caution in SPA)
       } else if (error.response.status === 403) {
          toast.error('You do not have permission to perform this action.');
-      } else {
-         // Other 4xx errors
-         toast.error(error.response.data || 'An error occurred.');
       }
+      // For other 400 errors, we can optionally show a generic toast or let the component handle it.
+      // Given the review feedback, we'll let the component handle specific validation errors
+      // to preserve granularity, but we ensure 404s etc are caught if needed.
     }
 
     return Promise.reject(error);
@@ -41,6 +42,7 @@ apiClient.interceptors.response.use(
 // Function to set the auth token globally for all apiClient requests
 export const setAuthToken = (token) => {
   if (token) {
+    // Backend expects x-auth-token per middleware/auth.js
     apiClient.defaults.headers.common['x-auth-token'] = token;
   } else {
     delete apiClient.defaults.headers.common['x-auth-token'];

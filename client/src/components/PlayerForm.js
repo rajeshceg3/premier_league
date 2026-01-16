@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -19,10 +19,7 @@ const PlayerForm = () => {
       setLoading(true);
       const fetchPlayerData = async () => {
         try {
-          const token = localStorage.getItem('token');
-          const res = await axios.get(`/api/players/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await apiClient.get(`/players/${id}`);
           setFormData({
             name: res.data.name,
             position: res.data.position || '',
@@ -46,27 +43,19 @@ const PlayerForm = () => {
   const onSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    };
 
     try {
       if (id) {
-        await axios.put(`/api/players/${id}`, formData, config);
+        await apiClient.put(`/players/${id}`, formData);
         toast.success('Player updated successfully!');
       } else {
-        await axios.post('/api/players', formData, config);
+        await apiClient.post('/players', formData);
         toast.success('Player added successfully!');
       }
-      // Delay navigation slightly to allow toast to be seen if not global
-      setTimeout(() => navigate('/players'), 1500);
+      navigate('/players');
     } catch (err) {
       toast.error(err.response?.data?.message || (id ? 'Failed to update player.' : 'Failed to add player.'));
-      setLoading(false); // Only stop loading on error, success navigates away
+      setLoading(false);
     }
   };
 

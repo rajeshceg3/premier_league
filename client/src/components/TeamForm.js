@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -18,10 +18,7 @@ const TeamForm = () => {
       setLoading(true);
       const fetchTeamData = async () => {
         try {
-          const token = localStorage.getItem('token');
-          const res = await axios.get(`/api/teams/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await apiClient.get(`/teams/${id}`);
           setFormData({
             name: res.data.name,
             coach: res.data.coach,
@@ -43,23 +40,16 @@ const TeamForm = () => {
   const onSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    };
 
     try {
       if (id) {
-        await axios.put(`/api/teams/${id}`, formData, config);
+        await apiClient.put(`/teams/${id}`, formData);
         toast.success('Team updated successfully!');
       } else {
-        await axios.post('/api/teams', formData, config);
+        await apiClient.post('/teams', formData);
         toast.success('Team added successfully!');
       }
-      setTimeout(() => navigate('/teams'), 1500);
+      navigate('/teams');
     } catch (err) {
       toast.error(err.response?.data?.message || (id ? 'Failed to update team.' : 'Failed to add team.'));
       setLoading(false);
