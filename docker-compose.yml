@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3900:3900"
+    environment:
+      - PREMIER_LEAGUE_DB=mongodb://mongo:27017/premier_league
+      - premier_league_jwt_privateKey=unsecure_secret_key_change_me
+      - NODE_ENV=production
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
