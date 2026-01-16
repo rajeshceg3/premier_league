@@ -1,5 +1,6 @@
 {
     "db" : "mongodb://localhost/premier_league_dev",
     "port" : 3900,
-    "requiresAuth" : false
+    "requiresAuth" : false,
+    "jwtPrivateKey": "premier_league_secret_key"
 }
