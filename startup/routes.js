@@ -14,7 +14,7 @@ const loans = require('../routes/loans');
 const returns = require('../routes/returns');
 const error = require('../middleware/error');
 
-module.exports = function (app) {
+module.exports = function routes(app) {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cors());

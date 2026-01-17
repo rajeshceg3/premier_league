@@ -69,6 +69,11 @@ const LoanForm = () => {
         return;
     }
 
+    if (new Date(startDate) > new Date(endDate)) {
+        toast.error('Start Date cannot be after End Date.');
+        return;
+    }
+
     setLoading(true);
 
     try {

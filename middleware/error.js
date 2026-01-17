@@ -1,7 +1,7 @@
 const winston = require('winston');
 
 // eslint-disable-next-line no-unused-vars
-module.exports = function (err, req, res, next) {
+module.exports = function error(err, req, res, next) {
   // Log metadata
   winston.error(err.message, {
     metadata: {
@@ -11,5 +11,6 @@ module.exports = function (err, req, res, next) {
     },
   });
 
-  res.status(500).send('Something failed.');
+  // Return JSON error for client-side consistency
+  res.status(500).json({ message: 'Something failed.' });
 };
