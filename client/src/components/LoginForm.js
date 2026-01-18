@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -64,7 +64,7 @@ const LoginForm = () => {
                 </Form.Group>
 
                 <Button variant="primary" type="submit" className="w-100" disabled={loading}>
-                  {loading ? 'Logging in...' : 'Login'}
+                  {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : 'Login'}
                 </Button>
               </Form>
             </Card.Body>
