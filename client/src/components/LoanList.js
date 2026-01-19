@@ -7,50 +7,21 @@ import { Container, Table, Button, Spinner, Badge, Card, Row, Col } from 'react-
 const LoanList = () => {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [relatedData, setRelatedData] = useState({
-    players: {},
-    teams: {},
-    agents: {},
-  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchLoans = async () => {
       try {
-        // Fetch loans, players, teams, and agents in parallel
-        // apiClient automatically attaches the x-auth-token via interceptors
-        const [loansRes, playersRes, teamsRes, agentsRes] = await Promise.all([
-          apiClient.get('/loans'),
-          apiClient.get('/players'),
-          apiClient.get('/teams'),
-          apiClient.get('/agents'),
-        ]);
-
-        setLoans(loansRes.data);
-
-        // Create lookups for related data
-        const playersMap = playersRes.data.reduce((acc, player) => {
-          acc[player._id] = player.name;
-          return acc;
-        }, {});
-        const teamsMap = teamsRes.data.reduce((acc, team) => {
-          acc[team._id] = team.name;
-          return acc;
-        }, {});
-        const agentsMap = agentsRes.data.reduce((acc, agent) => {
-          acc[agent._id] = agent.name;
-          return acc;
-        }, {});
-
-        setRelatedData({ players: playersMap, teams: teamsMap, agents: agentsMap });
+        const { data } = await apiClient.get('/loans');
+        setLoans(data);
       } catch (err) {
         console.error("Error fetching loan data", err);
-        toast.error(err.response?.data?.message || 'Failed to fetch data.');
+        toast.error(err.response?.data?.message || 'Failed to fetch loans.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchLoans();
   }, []);
 
   const handleDelete = async (id) => {
@@ -134,10 +105,10 @@ const LoanList = () => {
                 <tbody>
                   {loans.map(loan => (
                     <tr key={loan._id}>
-                      <td className="fw-bold">{relatedData.players[loan.player] || 'Unknown Player'}</td>
-                      <td>{relatedData.teams[loan.loaningTeam] || 'Unknown Team'}</td>
-                      <td>{relatedData.teams[loan.borrowingTeam] || 'Unknown Team'}</td>
-                      <td>{relatedData.agents[loan.agent] || <span className="text-muted">None</span>}</td>
+                      <td className="fw-bold">{loan.player?.name || 'Unknown Player'}</td>
+                      <td>{loan.loaningTeam?.name || 'Unknown Team'}</td>
+                      <td>{loan.borrowingTeam?.name || 'Unknown Team'}</td>
+                      <td>{loan.agent?.name || <span className="text-muted">None</span>}</td>
                       <td>
                         <div className="small">
                           <div><span className="text-muted">Start:</span> {new Date(loan.startDate).toLocaleDateString()}</div>
