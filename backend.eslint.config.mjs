@@ -1,6 +1,15 @@
-const globals = require("globals");
+import globals from "globals";
 
-module.exports = [
+export default [
+  {
+    ignores: [
+      "node_modules/",
+      "coverage/",
+      "config/custom-environment-variables.json",
+      "client/",
+      "scripts/loadData.js",
+    ],
+  },
   {
     languageOptions: {
       globals: {
@@ -13,12 +22,5 @@ module.exports = [
       "consistent-return": "off",
       "no-underscore-dangle": ["error", { allow: ["_id"] }],
     },
-    ignores: [
-      "node_modules/",
-      "coverage/",
-      "config/custom-environment-variables.json",
-      "client/",
-      "scripts/loadData.js",
-    ],
   },
 ];

@@ -81,7 +81,7 @@ describe('LoanList Component', () => {
       </BrowserRouter>
     );
 
-    await waitFor(() => expect(screen.getByText('Harry Kane')).toBeInTheDocument());
+    expect(await screen.findByText('Harry Kane')).toBeInTheDocument();
 
     const deleteBtn = screen.getByTitle('Delete');
     fireEvent.click(deleteBtn);
