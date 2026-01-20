@@ -14,23 +14,19 @@ jest.mock('react-toastify', () => ({
   },
 }));
 
-// Mock data
+// Mock data with EMBEDDED objects as per the new implementation
 const mockLoans = [
   {
     _id: 'l1',
-    player: 'p1',
-    loaningTeam: 't1',
-    borrowingTeam: 't2',
-    agent: 'a1',
+    player: { _id: 'p1', name: 'Harry Kane' },
+    loaningTeam: { _id: 't1', name: 'Spurs' },
+    borrowingTeam: { _id: 't2', name: 'Bayern' },
+    agent: { _id: 'a1', name: 'Charlie Kane' },
     startDate: '2023-01-01',
     endDate: '2023-06-01',
     status: 'Active'
   }
 ];
-
-const mockPlayers = [{ _id: 'p1', name: 'Harry Kane' }];
-const mockTeams = [{ _id: 't1', name: 'Spurs' }, { _id: 't2', name: 'Bayern' }];
-const mockAgents = [{ _id: 'a1', name: 'Charlie Kane' }];
 
 describe('LoanList Component', () => {
   beforeEach(() => {
@@ -53,9 +49,6 @@ describe('LoanList Component', () => {
   test('renders loans after data fetch', async () => {
     apiClient.get.mockImplementation((url) => {
       if (url === '/loans') return Promise.resolve({ data: mockLoans });
-      if (url === '/players') return Promise.resolve({ data: mockPlayers });
-      if (url === '/teams') return Promise.resolve({ data: mockTeams });
-      if (url === '/agents') return Promise.resolve({ data: mockAgents });
       return Promise.resolve({ data: [] });
     });
 
@@ -68,7 +61,7 @@ describe('LoanList Component', () => {
     // Wait for loading to finish
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
 
-    // Check if data is displayed (using the names from the maps)
+    // Check if data is displayed (using the names from the embedded objects)
     expect(screen.getByText('Harry Kane')).toBeInTheDocument();
     expect(screen.getByText('Spurs')).toBeInTheDocument();
     expect(screen.getByText('Bayern')).toBeInTheDocument();
@@ -76,16 +69,8 @@ describe('LoanList Component', () => {
   });
 
   test('handles delete action', async () => {
-     apiClient.get.mockResolvedValue({ data: [] }); // Default for others
-     apiClient.get.mockImplementation((url) => {
-      if (url === '/loans') return Promise.resolve({ data: mockLoans });
-      if (url === '/players') return Promise.resolve({ data: mockPlayers });
-      if (url === '/teams') return Promise.resolve({ data: mockTeams });
-      if (url === '/agents') return Promise.resolve({ data: mockAgents });
-      return Promise.resolve({ data: [] });
-    });
-
-    apiClient.delete.mockResolvedValue({});
+     apiClient.get.mockResolvedValue({ data: mockLoans });
+     apiClient.delete.mockResolvedValue({});
 
     // Mock window.confirm
     window.confirm = jest.fn(() => true);
