@@ -7,8 +7,8 @@
     "start": "node index.js",
     "test": "jest --detectOpenHandles --forceExit --testPathIgnorePatterns client/ tests/e2e/",
     "test:e2e": "playwright test",
-    "lint": "eslint . --ext .js",
-    "lint:fix": "eslint . --ext .js --fix",
+    "lint": "eslint . --config backend.eslint.config.mjs",
+    "lint:fix": "eslint . --config backend.eslint.config.mjs --fix",
     "format": "prettier --write '**/*.js'"
   },
   "repository": {
@@ -45,7 +45,6 @@
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "eslint": "^9.39.2",
-    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.4.0",
