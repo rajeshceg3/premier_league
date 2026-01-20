@@ -7,8 +7,24 @@ const { Team } = require('../models/team');
 const auth = require('../middleware/auth');
 
 router.get('/', async (req, res) => {
-  const loan = await Loan.find().select('-__v').sort('-loanDate');
-  res.send(loan);
+  const pageNumber = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.limit) || 10;
+  const skip = (pageNumber - 1) * pageSize;
+
+  const loans = await Loan.find()
+    .select('-__v')
+    .sort('-loanDate')
+    .skip(skip)
+    .limit(pageSize);
+
+  const total = await Loan.countDocuments();
+
+  res.send({
+    items: loans,
+    totalItems: total,
+    currentPage: pageNumber,
+    totalPages: Math.ceil(total / pageSize),
+  });
 });
 
 router.post('/', auth, async (req, res) => {

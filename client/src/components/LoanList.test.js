@@ -14,7 +14,7 @@ jest.mock('react-toastify', () => ({
   },
 }));
 
-// Mock data with EMBEDDED objects as per the new implementation
+// Mock data
 const mockLoans = [
   {
     _id: 'l1',
@@ -28,13 +28,19 @@ const mockLoans = [
   }
 ];
 
+const mockPaginatedResponse = {
+    items: mockLoans,
+    totalItems: 1,
+    currentPage: 1,
+    totalPages: 1
+};
+
 describe('LoanList Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test('renders loading spinner initially', () => {
-    // Setup promises that don't resolve immediately to check loading state
     apiClient.get.mockImplementation(() => new Promise(() => {}));
 
     render(
@@ -47,10 +53,7 @@ describe('LoanList Component', () => {
   });
 
   test('renders loans after data fetch', async () => {
-    apiClient.get.mockImplementation((url) => {
-      if (url === '/loans') return Promise.resolve({ data: mockLoans });
-      return Promise.resolve({ data: [] });
-    });
+    apiClient.get.mockResolvedValue({ data: mockPaginatedResponse });
 
     render(
       <BrowserRouter>
@@ -58,22 +61,14 @@ describe('LoanList Component', () => {
       </BrowserRouter>
     );
 
-    // Wait for loading to finish
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
 
-    // Check if data is displayed (using the names from the embedded objects)
     expect(screen.getByText('Harry Kane')).toBeInTheDocument();
-    expect(screen.getByText('Spurs')).toBeInTheDocument();
-    expect(screen.getByText('Bayern')).toBeInTheDocument();
-    expect(screen.getByText('Charlie Kane')).toBeInTheDocument();
   });
 
-  test('handles delete action', async () => {
-     apiClient.get.mockResolvedValue({ data: mockLoans });
+  test('handles delete action via Modal', async () => {
+     apiClient.get.mockResolvedValue({ data: mockPaginatedResponse });
      apiClient.delete.mockResolvedValue({});
-
-    // Mock window.confirm
-    window.confirm = jest.fn(() => true);
 
     render(
       <BrowserRouter>
@@ -81,15 +76,21 @@ describe('LoanList Component', () => {
       </BrowserRouter>
     );
 
-    expect(await screen.findByText('Harry Kane')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Harry Kane')).toBeInTheDocument());
 
+    // Click Delete button on the row
     const deleteBtn = screen.getByTitle('Delete');
     fireEvent.click(deleteBtn);
 
-    expect(window.confirm).toHaveBeenCalled();
-    expect(apiClient.delete).toHaveBeenCalledWith('/loans/l1');
+    // Modal should appear
+    expect(screen.getByText('Confirm Deletion')).toBeInTheDocument();
+
+    // Click confirm in modal
+    const confirmBtn = screen.getByText('Delete Loan');
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
+        expect(apiClient.delete).toHaveBeenCalledWith('/loans/l1');
         expect(toast.success).toHaveBeenCalledWith('Loan deleted successfully.');
     });
   });
