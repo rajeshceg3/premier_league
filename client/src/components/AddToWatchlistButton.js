@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from 'react-bootstrap';
 import { addToWatchlist, removeFromWatchlist } from '../services/apiClient';
 
 const AddToWatchlistButton = ({ playerId, isInitiallyWatched, onToggle }) => {
@@ -15,28 +16,29 @@ const AddToWatchlistButton = ({ playerId, isInitiallyWatched, onToggle }) => {
       if (watched) {
         await removeFromWatchlist(playerId);
         setWatched(false);
-        if (onToggle) onToggle(false); // Pass new watched state (false)
+        if (onToggle) onToggle(false);
       } else {
         await addToWatchlist(playerId);
         setWatched(true);
-        if (onToggle) onToggle(true); // Pass new watched state (true)
+        if (onToggle) onToggle(true);
       }
     } catch (error) {
       console.error("Failed to toggle watchlist", error.response?.data || error.message);
-      // Optionally, display a more user-friendly error message
     }
     setLoading(false);
   };
 
   return (
-    <button
+    <Button
+      variant={watched ? "outline-warning" : "outline-success"}
+      size="sm"
       onClick={handleClick}
       disabled={loading}
       aria-label={watched ? 'Remove from Watchlist' : 'Add to Watchlist'}
-      style={{ padding: '8px 12px', cursor: loading ? 'not-allowed' : 'pointer' }}
+      title={watched ? 'Remove from Watchlist' : 'Add to Watchlist'}
     >
       {loading ? '...' : (watched ? 'Remove from Watchlist' : 'Add to Watchlist')}
-    </button>
+    </Button>
   );
 };
 

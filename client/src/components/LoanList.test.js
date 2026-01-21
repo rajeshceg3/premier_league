@@ -76,7 +76,7 @@ describe('LoanList Component', () => {
       </BrowserRouter>
     );
 
-    await waitFor(() => expect(screen.getByText('Harry Kane')).toBeInTheDocument());
+    expect(await screen.findByText('Harry Kane')).toBeInTheDocument();
 
     // Click Delete button on the row
     const deleteBtn = screen.getByTitle('Delete');
@@ -89,9 +89,7 @@ describe('LoanList Component', () => {
     const confirmBtn = screen.getByText('Delete Loan');
     fireEvent.click(confirmBtn);
 
-    await waitFor(() => {
-        expect(apiClient.delete).toHaveBeenCalledWith('/loans/l1');
-        expect(toast.success).toHaveBeenCalledWith('Loan deleted successfully.');
-    });
+    await waitFor(() => expect(apiClient.delete).toHaveBeenCalledWith('/loans/l1'));
+    expect(toast.success).toHaveBeenCalledWith('Loan deleted successfully.');
   });
 });

@@ -1,45 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
-import AddToWatchlistButton from './AddToWatchlistButton'; // Import AddToWatchlistButton
-import { getWatchlist } from '../services/apiClient'; // Import getWatchlist
+import { toast } from 'react-toastify';
+import { Container, Table, Button, Spinner, Card, Row, Col, Modal } from 'react-bootstrap';
+import apiClient, { getWatchlist } from '../services/apiClient';
+import AddToWatchlistButton from './AddToWatchlistButton';
 
 const PlayerList = () => {
   const [players, setPlayers] = useState([]);
-  const [userWatchlistIds, setUserWatchlistIds] = useState(new Set()); // For storing IDs of watched players
-  const [error, setError] = useState('');
+  const [userWatchlistIds, setUserWatchlistIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
+
+  // Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('Authentication token not found. Please login.');
-          setLoading(false);
-          return;
+        // Fetch players and watchlist in parallel
+        const [playersRes, watchlistData] = await Promise.allSettled([
+          apiClient.get('/players'),
+          getWatchlist()
+        ]);
+
+        // Handle Players Response
+        if (playersRes.status === 'fulfilled') {
+          setPlayers(playersRes.value.data);
+        } else {
+          console.error("Failed to fetch players", playersRes.reason);
+          toast.error(playersRes.reason.response?.data?.message || 'Failed to fetch players.');
         }
 
-        // Fetch players
-        const playersRes = await axios.get('/api/players', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setPlayers(playersRes.data);
-
-        // Fetch user's watchlist
-        try {
-          const watchlist = await getWatchlist(); // apiClient handles token
-          setUserWatchlistIds(new Set(watchlist.map(p => p._id)));
-        } catch (watchlistError) {
-          console.error("Failed to fetch user's watchlist", watchlistError);
-          // Not setting main error for this, but logging it.
-          // PlayerList can still function without watchlist info.
+        // Handle Watchlist Response
+        if (watchlistData.status === 'fulfilled') {
+           setUserWatchlistIds(new Set(watchlistData.value.map(p => p._id)));
+        } else {
+           console.error("Failed to fetch watchlist", watchlistData.reason);
+           // Silent fail for watchlist is acceptable, but logging is good.
         }
 
-        setLoading(false);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch data.');
+        // Should not happen with Promise.allSettled unless something catastrophic
+        console.error("Unexpected error in fetchData", err);
+        toast.error('An unexpected error occurred while loading data.');
+      } finally {
         setLoading(false);
       }
     };
@@ -47,58 +52,122 @@ const PlayerList = () => {
     fetchData();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this player?')) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`/api/players/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setPlayers(players.filter(player => player._id !== id));
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to delete player.');
-      }
+  const confirmDelete = (player) => {
+    setPlayerToDelete(player);
+    setShowDeleteModal(true);
+  };
+
+  const executeDelete = async () => {
+    if (!playerToDelete) return;
+    try {
+      await apiClient.delete(`/players/${playerToDelete._id}`);
+      setPlayers(players.filter(player => player._id !== playerToDelete._id));
+      toast.success('Player deleted successfully.');
+      setShowDeleteModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete player.');
     }
   };
 
-  if (loading) return <p>Loading players...</p>;
-
   return (
-    <div>
-      <h2>Player Management</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <Link to="/players/new">Add New Player</Link>
-      {players.length === 0 && !loading && <p>No players found. Add one!</p>}
-      {players.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Position</th>
-              <th>Jersey Number</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {players.map(player => (
-              <tr key={player._id}>
-                <td>{player.name}</td>
-                <td>{player.position}</td>
-                <td>{player.jerseyNumber}</td>
-                <td>
-                  <Link to={`/players/edit/${player._id}`}>Edit</Link>
-                  <button onClick={() => handleDelete(player._id)}>Delete</button>
-                  <AddToWatchlistButton
-                    playerId={player._id}
-                    isInitiallyWatched={userWatchlistIds.has(player._id)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+    <Container className="mt-4">
+      <Row className="mb-4 align-items-center">
+        <Col>
+          <h2>Player Management</h2>
+        </Col>
+        <Col className="text-end">
+          <Link to="/players/new">
+            <Button variant="primary">
+              <i className="fas fa-plus"></i> Add New Player
+            </Button>
+          </Link>
+        </Col>
+      </Row>
+
+      <Card className="shadow-sm">
+        <Card.Body>
+          {loading ? (
+            <div className="d-flex justify-content-center py-5">
+              <Spinner animation="border" role="status" variant="primary">
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            </div>
+          ) : players.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-muted">No players found.</p>
+              <Link to="/players/new">
+                <Button variant="outline-primary" size="sm">Create First Player</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <Table hover striped bordered className="align-middle">
+                <thead className="table-light">
+                  <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Jersey Number</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {players.map(player => (
+                    <tr key={player._id}>
+                      <td className="fw-bold">{player.name}</td>
+                      <td>{player.position}</td>
+                      <td>{player.jerseyNumber}</td>
+                      <td>
+                        <div className="d-flex gap-2">
+                          <Link to={`/players/edit/${player._id}`}>
+                            <Button variant="outline-primary" size="sm" title="Edit">
+                              <i className="fas fa-edit"></i>
+                            </Button>
+                          </Link>
+
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => confirmDelete(player)}
+                            title="Delete"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </Button>
+
+                          <AddToWatchlistButton
+                            playerId={player._id}
+                            isInitiallyWatched={userWatchlistIds.has(player._id)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete player <strong>{playerToDelete?.name}</strong>?
+          This action cannot be undone.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={executeDelete}>
+            Delete Player
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+    </Container>
   );
 };
 
