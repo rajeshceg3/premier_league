@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Container, Table, Button, Spinner, Card, Row, Col, Modal } from 'react-bootstrap';
+import { Table, Button, Spinner, Card, Modal, InputGroup, Form } from 'react-bootstrap';
 import apiClient from '../services/apiClient';
 
 const TeamList = () => {
   const [teams, setTeams] = useState([]);
+  const [filteredTeams, setFilteredTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -18,6 +20,7 @@ const TeamList = () => {
       try {
         const res = await apiClient.get('/teams');
         setTeams(res.data);
+        setFilteredTeams(res.data);
       } catch (err) {
         toast.error(err.response?.data?.message || 'Failed to fetch teams.');
       } finally {
@@ -28,6 +31,14 @@ const TeamList = () => {
     fetchTeams();
   }, []);
 
+  useEffect(() => {
+    const results = teams.filter(team =>
+      team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      team.coach.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredTeams(results);
+  }, [searchTerm, teams]);
+
   const confirmDelete = (team) => {
     setTeamToDelete(team);
     setShowDeleteModal(true);
@@ -37,7 +48,11 @@ const TeamList = () => {
     if (!teamToDelete) return;
     try {
       await apiClient.delete(`/teams/${teamToDelete._id}`);
-      setTeams(teams.filter(team => team._id !== teamToDelete._id));
+      const updatedTeams = teams.filter(team => team._id !== teamToDelete._id);
+      setTeams(updatedTeams);
+      setFilteredTeams(updatedTeams.filter(team =>
+        team.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
       toast.success('Team deleted successfully.');
       setShowDeleteModal(false);
     } catch (err) {
@@ -46,61 +61,89 @@ const TeamList = () => {
   };
 
   return (
-    <Container className="mt-4">
-      <Row className="mb-4 align-items-center">
-        <Col>
-          <h2>Team Management</h2>
-        </Col>
-        <Col className="text-end">
+    <div className="fade-in">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <div>
+           <h2 className="fw-bold text-secondary mb-1">Team Management</h2>
+           <p className="text-muted mb-0">Manage football clubs and coaching staff.</p>
+        </div>
+        <div className="mt-3 mt-md-0">
           <Link to="/teams/new">
-            <Button variant="primary">
-              <i className="fas fa-plus"></i> Add New Team
+            <Button variant="primary" className="shadow-sm">
+              <i className="fas fa-plus me-2"></i> Register Team
             </Button>
           </Link>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
-      <Card className="shadow-sm">
-        <Card.Body>
+      <Card className="border-0 shadow-sm mb-4">
+        <Card.Body className="p-3">
+             <InputGroup>
+                <InputGroup.Text className="bg-white border-end-0">
+                    <i className="fas fa-search text-muted"></i>
+                </InputGroup.Text>
+                <Form.Control
+                    type="text"
+                    placeholder="Search by team name or coach..."
+                    className="border-start-0 ps-0"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </InputGroup>
+        </Card.Body>
+      </Card>
+
+      <Card className="border-0 shadow-sm">
+        <Card.Body className="p-0">
           {loading ? (
             <div className="d-flex justify-content-center py-5">
               <Spinner animation="border" role="status" variant="primary">
                 <span className="visually-hidden">Loading...</span>
               </Spinner>
             </div>
-          ) : teams.length === 0 ? (
-            <div className="text-center py-4">
+          ) : filteredTeams.length === 0 ? (
+            <div className="text-center py-5">
+              <div className="mb-3 text-muted"><i className="fas fa-shield-alt fa-3x"></i></div>
               <p className="text-muted">No teams found.</p>
-              <Link to="/teams/new">
-                <Button variant="outline-primary" size="sm">Create First Team</Button>
-              </Link>
+              {searchTerm && <Button variant="link" onClick={() => setSearchTerm('')}>Clear Search</Button>}
             </div>
           ) : (
             <div className="table-responsive">
-              <Table hover striped bordered className="align-middle">
-                <thead className="table-light">
+              <Table hover className="align-middle mb-0 table-borderless">
+                <thead className="bg-light text-secondary border-bottom">
                   <tr>
-                    <th>Name</th>
-                    <th>Coach</th>
-                    <th>Actions</th>
+                    <th className="ps-4 py-3 text-uppercase small fw-bold">Team Name</th>
+                    <th className="py-3 text-uppercase small fw-bold">Head Coach</th>
+                    <th className="pe-4 py-3 text-uppercase small fw-bold text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {teams.map(team => (
-                    <tr key={team._id}>
-                      <td className="fw-bold">{team.name}</td>
-                      <td>{team.coach}</td>
-                      <td>
-                        <div className="d-flex gap-2">
+                  {filteredTeams.map(team => (
+                    <tr key={team._id} className="border-bottom">
+                      <td className="ps-4 py-3">
+                        <div className="d-flex align-items-center">
+                              <div className="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center me-3" style={{width: '40px', height: '40px'}}>
+                                  <i className="fas fa-shield-alt"></i>
+                              </div>
+                              <span className="fw-bold text-dark">{team.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-muted">
+                        <i className="fas fa-user-tie me-2 text-secondary small"></i>
+                        {team.coach}
+                      </td>
+                      <td className="pe-4 py-3 text-end">
+                        <div className="d-flex justify-content-end gap-2">
                           <Link to={`/teams/edit/${team._id}`}>
-                            <Button variant="outline-primary" size="sm" title="Edit">
+                            <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
                               <i className="fas fa-edit"></i>
                             </Button>
                           </Link>
 
                           <Button
-                            variant="outline-danger"
+                            variant="light"
                             size="sm"
+                            className="text-danger hover-danger"
                             onClick={() => confirmDelete(team)}
                             title="Delete"
                           >
@@ -117,26 +160,25 @@ const TeamList = () => {
         </Card.Body>
       </Card>
 
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered backdrop="static">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="h5 fw-bold text-danger">Confirm Deletion</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete team <strong>{teamToDelete?.name}</strong>?
-          This action cannot be undone.
+        <Modal.Body className="pt-2">
+          <p>Are you sure you want to delete team <strong>{teamToDelete?.name}</strong>?</p>
+          <p className="small text-muted mb-0">This action will remove the team and may affect associated loans.</p>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="light" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
           <Button variant="danger" onClick={executeDelete}>
-            Delete Team
+            <i className="fas fa-trash me-2"></i>Delete Team
           </Button>
         </Modal.Footer>
       </Modal>
 
-    </Container>
+    </div>
   );
 };
 

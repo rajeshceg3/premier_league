@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../services/apiClient';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { Form, Button, Row, Col, Card, Spinner, FloatingLabel } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 const LoanForm = () => {
@@ -96,108 +96,125 @@ const LoanForm = () => {
 
   if (fetchingData) {
       return (
-          <Container className="d-flex justify-content-center mt-5">
-              <Spinner animation="border" role="status">
+          <div className="d-flex justify-content-center align-items-center" style={{minHeight: '60vh'}}>
+              <Spinner animation="border" role="status" variant="info">
                   <span className="visually-hidden">Loading...</span>
               </Spinner>
-          </Container>
+          </div>
       );
   }
 
   return (
-    <Container className="mt-4">
-      <Row className="justify-content-md-center">
-        <Col xs={12} md={8} lg={6}>
-          <Card className="shadow-sm">
-            <Card.Header as="h4" className="bg-primary text-white text-center">
-              {id ? 'Edit Loan' : 'Create New Loan'}
-            </Card.Header>
-            <Card.Body>
+    <div className="fade-in">
+       <div className="mb-4">
+        <Link to="/loans" className="text-decoration-none text-muted small hover-primary">
+            <i className="fas fa-arrow-left me-1"></i> Back to Loans
+        </Link>
+        <h2 className="fw-bold mt-2">{id ? 'Edit Loan Agreement' : 'New Loan Agreement'}</h2>
+        <p className="text-muted">Configure the terms of the player loan between clubs.</p>
+      </div>
+
+      <Row className="justify-content-center">
+        <Col lg={8} xl={7}>
+          <Card className="border-0 shadow-lg">
+            <Card.Body className="p-4 p-md-5">
               <Form onSubmit={onSubmit}>
-                <Form.Group className="mb-3" controlId="playerId">
-                  <Form.Label>Player</Form.Label>
-                  <Form.Select
-                    name="playerId"
-                    value={playerId}
-                    onChange={onChange}
-                    required
-                  >
-                    <option value="">Select Player</option>
-                    {players.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-                  </Form.Select>
-                </Form.Group>
+                <h5 className="mb-4 text-info fw-bold border-bottom pb-2">Agreement Details</h5>
 
-                <Form.Group className="mb-3" controlId="loaningTeamId">
-                  <Form.Label>Loaning Team</Form.Label>
-                  <Form.Select
-                    name="loaningTeamId"
-                    value={loaningTeamId}
-                    onChange={onChange}
-                    required
-                  >
-                    <option value="">Select Loaning Team</option>
-                    {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-                  </Form.Select>
-                </Form.Group>
+                <Row className="g-3">
+                    <Col md={12}>
+                        <FloatingLabel controlId="playerId" label="Select Player">
+                            <Form.Select
+                                name="playerId"
+                                value={playerId}
+                                onChange={onChange}
+                                required
+                                className="bg-light border-0"
+                            >
+                                <option value="">-- Choose Player --</option>
+                                {players.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                            </Form.Select>
+                        </FloatingLabel>
+                    </Col>
 
-                <Form.Group className="mb-3" controlId="borrowingTeamId">
-                  <Form.Label>Borrowing Team</Form.Label>
-                  <Form.Select
-                    name="borrowingTeamId"
-                    value={borrowingTeamId}
-                    onChange={onChange}
-                    required
-                  >
-                    <option value="">Select Borrowing Team</option>
-                    {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-                  </Form.Select>
-                </Form.Group>
+                    <Col md={6}>
+                        <FloatingLabel controlId="loaningTeamId" label="Loaning Team (From)">
+                            <Form.Select
+                                name="loaningTeamId"
+                                value={loaningTeamId}
+                                onChange={onChange}
+                                required
+                                className="bg-light border-0"
+                            >
+                                <option value="">-- Choose Team --</option>
+                                {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                            </Form.Select>
+                        </FloatingLabel>
+                    </Col>
 
-                <Form.Group className="mb-3" controlId="agentId">
-                  <Form.Label>Agent (Optional)</Form.Label>
-                  <Form.Select
-                    name="agentId"
-                    value={agentId}
-                    onChange={onChange}
-                  >
-                    <option value="">Select Agent</option>
-                    {agents.map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
-                  </Form.Select>
-                </Form.Group>
+                    <Col md={6}>
+                        <FloatingLabel controlId="borrowingTeamId" label="Borrowing Team (To)">
+                            <Form.Select
+                                name="borrowingTeamId"
+                                value={borrowingTeamId}
+                                onChange={onChange}
+                                required
+                                className="bg-light border-0"
+                            >
+                                <option value="">-- Choose Team --</option>
+                                {teams.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                            </Form.Select>
+                        </FloatingLabel>
+                    </Col>
 
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3" controlId="startDate">
-                      <Form.Label>Start Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="startDate"
-                        value={startDate}
-                        onChange={onChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3" controlId="endDate">
-                      <Form.Label>End Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="endDate"
-                        value={endDate}
-                        onChange={onChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                    <Col md={12}>
+                         <FloatingLabel controlId="agentId" label="Agent (Optional)">
+                            <Form.Select
+                                name="agentId"
+                                value={agentId}
+                                onChange={onChange}
+                                className="bg-light border-0"
+                            >
+                                <option value="">-- Select Agent --</option>
+                                {agents.map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
+                            </Form.Select>
+                        </FloatingLabel>
+                    </Col>
+
+                    <Col md={6}>
+                        <FloatingLabel controlId="startDate" label="Start Date">
+                            <Form.Control
+                                type="date"
+                                name="startDate"
+                                value={startDate}
+                                onChange={onChange}
+                                required
+                                className="bg-light border-0"
+                            />
+                        </FloatingLabel>
+                    </Col>
+
+                    <Col md={6}>
+                        <FloatingLabel controlId="endDate" label="End Date">
+                            <Form.Control
+                                type="date"
+                                name="endDate"
+                                value={endDate}
+                                onChange={onChange}
+                                required
+                                className="bg-light border-0"
+                            />
+                        </FloatingLabel>
+                    </Col>
                 </Row>
 
-                <div className="d-grid gap-2">
-                  <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : (id ? 'Update Loan' : 'Create Loan')}
-                  </Button>
-                  <Button variant="outline-secondary" onClick={() => navigate('/loans')} disabled={loading}>
+                <div className="d-flex justify-content-end gap-2 mt-5">
+                  <Button variant="light" onClick={() => navigate('/loans')} disabled={loading} className="px-4">
                     Cancel
+                  </Button>
+                  <Button variant="info" type="submit" disabled={loading} className="px-4 shadow-sm text-white">
+                    {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" /> : null}
+                    {id ? 'Update Loan' : 'Create Loan'}
                   </Button>
                 </div>
               </Form>
@@ -205,7 +222,7 @@ const LoanForm = () => {
           </Card>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 };
 

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { Row, Col, Card, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/apiClient';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState([
-    { title: 'Players', count: '-', link: '/players', icon: 'fas fa-users', color: 'primary' },
-    { title: 'Teams', count: '-', link: '/teams', icon: 'fas fa-shield-alt', color: 'success' },
-    { title: 'Agents', count: '-', link: '/agents', icon: 'fas fa-briefcase', color: 'warning' },
-    { title: 'Loans', count: '-', link: '/loans', icon: 'fas fa-handshake', color: 'info' },
+    { title: 'Total Players', count: '-', link: '/players', icon: 'fas fa-users', color: 'primary' },
+    { title: 'Teams Managed', count: '-', link: '/teams', icon: 'fas fa-shield-alt', color: 'success' },
+    { title: 'Active Agents', count: '-', link: '/agents', icon: 'fas fa-briefcase', color: 'warning' },
+    { title: 'Active Loans', count: '-', link: '/loans', icon: 'fas fa-handshake', color: 'info' },
   ]);
 
   useEffect(() => {
@@ -23,15 +23,17 @@ const Dashboard = () => {
           apiClient.get('/loans')
         ]);
 
+        // Handle pagination response structure or array
+        const getCount = (res) => res.data.totalItems || res.data.length || 0;
+
         setStats([
-          { title: 'Players', count: playersRes.data.length, link: '/players', icon: 'fas fa-users', color: 'primary' },
-          { title: 'Teams', count: teamsRes.data.length, link: '/teams', icon: 'fas fa-shield-alt', color: 'success' },
-          { title: 'Agents', count: agentsRes.data.length, link: '/agents', icon: 'fas fa-briefcase', color: 'warning' },
-          { title: 'Loans', count: loansRes.data.length, link: '/loans', icon: 'fas fa-handshake', color: 'info' },
+          { title: 'Total Players', count: getCount(playersRes), link: '/players', icon: 'fas fa-users', color: 'primary' },
+          { title: 'Teams Managed', count: getCount(teamsRes), link: '/teams', icon: 'fas fa-shield-alt', color: 'success' },
+          { title: 'Active Agents', count: getCount(agentsRes), link: '/agents', icon: 'fas fa-user-tie', color: 'warning' },
+          { title: 'Active Loans', count: getCount(loansRes), link: '/loans', icon: 'fas fa-handshake', color: 'info' },
         ]);
       } catch (error) {
         console.error("Error fetching dashboard stats", error);
-        // Optionally handle error state
       }
     };
 
@@ -39,25 +41,34 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <Container className="mt-4">
-      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 className="h2">Dashboard</h1>
-        <div className="btn-toolbar mb-2 mb-md-0">
-           <span className="text-muted">Welcome back, {user && user.name ? user.name : 'User'}</span>
+    <div className="dashboard-container fade-in">
+      <div className="d-flex justify-content-between align-items-center mb-5">
+        <div>
+          <h1 className="h3 fw-bold text-secondary mb-1">Dashboard</h1>
+          <p className="text-muted mb-0">Welcome back, {user?.name || 'Manager'}</p>
+        </div>
+        <div>
+           {/* Date or other utility could go here */}
+           <span className="badge bg-white text-secondary shadow-sm p-2 border fw-normal">
+             <i className="far fa-calendar-alt me-2"></i>
+             {new Date().toLocaleDateString()}
+           </span>
         </div>
       </div>
 
-      <Row xs={1} md={2} lg={4} className="g-4 mb-4">
+      <Row className="g-4 mb-5">
         {stats.map((stat, idx) => (
-          <Col key={idx}>
-            <Card className="h-100 shadow-sm border-0">
-              <Card.Body className="d-flex flex-column align-items-center justify-content-center text-center">
-                 <div className={`rounded-circle bg-${stat.color} bg-opacity-10 p-3 mb-3 text-${stat.color}`} style={{width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                    <i className={`${stat.icon} fa-2x`}></i>
+          <Col md={6} xl={3} key={idx}>
+            <Card className="h-100 border-0 shadow-sm card-hover">
+              <Card.Body className="d-flex align-items-center p-4">
+                 <div className={`rounded-circle bg-${stat.color} bg-opacity-10 p-3 me-3 text-${stat.color} d-flex align-items-center justify-content-center`} style={{width: '60px', height: '60px', flexShrink: 0}}>
+                    <i className={`${stat.icon} fa-lg`}></i>
                  </div>
-                <Card.Title>{stat.title}</Card.Title>
-                <Card.Text className="display-6 fw-bold">{stat.count}</Card.Text>
-                <Link to={stat.link} className="stretched-link"></Link>
+                 <div>
+                    <div className="text-muted small text-uppercase fw-bold mb-1">{stat.title}</div>
+                    <div className="h3 fw-bold mb-0 text-dark">{stat.count}</div>
+                 </div>
+                 <Link to={stat.link} className="stretched-link"></Link>
               </Card.Body>
             </Card>
           </Col>
@@ -65,37 +76,58 @@ const Dashboard = () => {
       </Row>
 
       <Row className="g-4">
-        <Col md={6}>
-            <Card className="shadow-sm h-100">
-                <Card.Header>Quick Actions</Card.Header>
-                <Card.Body>
-                    <div className="d-grid gap-2">
-                        <Button variant="outline-primary" as={Link} to="/players/new">
-                            <i className="fas fa-plus me-2"></i> Register New Player
-                        </Button>
-                        <Button variant="outline-success" as={Link} to="/loans/new">
-                            <i className="fas fa-file-contract me-2"></i> Initiate Loan
-                        </Button>
-                    </div>
+        <Col lg={8}>
+            <Card className="border-0 shadow-sm h-100">
+                <Card.Header className="bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                   <h5 className="mb-0 fw-bold">Quick Actions</h5>
+                </Card.Header>
+                <Card.Body className="p-4">
+                    <Row className="g-3">
+                        <Col sm={6}>
+                           <div className="p-3 border rounded bg-light hover-bg-white transition-all h-100 d-flex flex-column">
+                              <div className="mb-2 text-primary"><i className="fas fa-user-plus fa-2x"></i></div>
+                              <h6 className="fw-bold">Register Player</h6>
+                              <p className="small text-muted mb-3">Add a new player profile to the database.</p>
+                              <Button variant="primary" size="sm" as={Link} to="/players/new" className="mt-auto stretched-link">Create Player</Button>
+                           </div>
+                        </Col>
+                        <Col sm={6}>
+                           <div className="p-3 border rounded bg-light hover-bg-white transition-all h-100 d-flex flex-column">
+                              <div className="mb-2 text-success"><i className="fas fa-file-contract fa-2x"></i></div>
+                              <h6 className="fw-bold">Initiate Loan</h6>
+                              <p className="small text-muted mb-3">Start a new loan agreement process.</p>
+                              <Button variant="success" size="sm" as={Link} to="/loans/new" className="mt-auto stretched-link">New Loan</Button>
+                           </div>
+                        </Col>
+                         <Col sm={6}>
+                           <div className="p-3 border rounded bg-light hover-bg-white transition-all h-100 d-flex flex-column">
+                              <div className="mb-2 text-warning"><i className="fas fa-user-tie fa-2x"></i></div>
+                              <h6 className="fw-bold">Add Agent</h6>
+                              <p className="small text-muted mb-3">Register a new agent contact.</p>
+                              <Button variant="warning" size="sm" as={Link} to="/agents/new" className="mt-auto stretched-link text-white">New Agent</Button>
+                           </div>
+                        </Col>
+                    </Row>
                 </Card.Body>
             </Card>
         </Col>
-        <Col md={6}>
-            <Card className="shadow-sm h-100">
-                <Card.Header>Watchlist Preview</Card.Header>
-                <Card.Body>
-                    <div className="text-center my-4">
-                        <i className="fas fa-list-alt fa-3x mb-3 text-muted"></i>
-                        <p className="text-muted">Quickly access your tracked players.</p>
+        <Col lg={4}>
+            <Card className="border-0 shadow-sm h-100">
+                <Card.Header className="bg-transparent border-0 pt-4 px-4">
+                   <h5 className="mb-0 fw-bold">Watchlist</h5>
+                </Card.Header>
+                <Card.Body className="p-4 d-flex flex-column align-items-center justify-content-center text-center">
+                    <div className="bg-light rounded-circle p-4 mb-3">
+                        <i className="fas fa-star fa-3x text-warning"></i>
                     </div>
-                    <div className="d-grid">
-                        <Button variant="outline-secondary" as={Link} to="/watchlist">Go to Watchlist</Button>
-                    </div>
+                    <h6 className="fw-bold">Track Potential</h6>
+                    <p className="text-muted small mb-4">Keep an eye on players for future loan opportunities.</p>
+                    <Button variant="outline-dark" className="w-100" as={Link} to="/watchlist">View Watchlist</Button>
                 </Card.Body>
             </Card>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 };
 

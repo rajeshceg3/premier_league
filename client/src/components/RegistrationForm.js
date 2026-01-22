@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { Form, Button, Card, Spinner, FloatingLabel } from 'react-bootstrap';
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -33,59 +33,68 @@ const RegistrationForm = () => {
   };
 
   return (
-    <Container className="mt-5">
-      <Row className="justify-content-md-center">
-        <Col xs={12} md={6}>
-          <Card>
-            <Card.Header as="h3" className="text-center">Register</Card.Header>
-            <Card.Body>
-              <Form onSubmit={onSubmit}>
-                <Form.Group className="mb-3" controlId="formBasicName">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter name"
-                    name="name"
-                    value={name}
-                    onChange={onChange}
-                    required
-                  />
-                </Form.Group>
+    <Card className="auth-card border-0">
+        <Card.Body className="p-0">
+            <div className="text-center mb-5">
+                <div className="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{width: '64px', height: '64px'}}>
+                    <i className="fas fa-user-plus fa-2x"></i>
+                </div>
+                <h3 className="fw-bold text-dark">Create Account</h3>
+                <p className="text-muted">Join the platform to start managing loans</p>
+            </div>
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                  <Form.Label>Email address</Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder="Enter email"
-                    name="email"
-                    value={email}
-                    onChange={onChange}
-                    required
-                  />
-                </Form.Group>
+            <Form onSubmit={onSubmit}>
+                <FloatingLabel controlId="name" label="Full Name" className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="John Doe"
+                        name="name"
+                        value={name}
+                        onChange={onChange}
+                        required
+                        className="bg-light border-0"
+                    />
+                </FloatingLabel>
 
-                <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    placeholder="Password"
-                    name="password"
-                    value={password}
-                    onChange={onChange}
-                    required
-                    minLength="5"
-                  />
-                </Form.Group>
+                <FloatingLabel controlId="email" label="Email Address" className="mb-3">
+                    <Form.Control
+                        type="email"
+                        placeholder="name@example.com"
+                        name="email"
+                        value={email}
+                        onChange={onChange}
+                        required
+                        className="bg-light border-0"
+                    />
+                </FloatingLabel>
 
-                <Button variant="primary" type="submit" className="w-100" disabled={loading}>
-                  {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : 'Register'}
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+                <FloatingLabel controlId="password" label="Password" className="mb-4">
+                    <Form.Control
+                        type="password"
+                        placeholder="Password"
+                        name="password"
+                        value={password}
+                        onChange={onChange}
+                        required
+                        minLength="5"
+                        className="bg-light border-0"
+                    />
+                    <Form.Text className="text-muted small">Must be at least 5 characters long.</Form.Text>
+                </FloatingLabel>
+
+                <div className="d-grid mb-4">
+                    <Button variant="secondary" size="lg" type="submit" disabled={loading} className="shadow-sm">
+                        {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2"/> : null}
+                        {loading ? 'Creating Account...' : 'Register'}
+                    </Button>
+                </div>
+
+                <div className="text-center text-muted">
+                    Already have an account? <Link to="/login" className="text-secondary fw-bold text-decoration-none">Sign In</Link>
+                </div>
+            </Form>
+        </Card.Body>
+    </Card>
   );
 };
 

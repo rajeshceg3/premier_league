@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import WatchlistPage from './WatchlistPage';
 import { getWatchlist, removeFromWatchlist } from '../services/apiClient';
+import { BrowserRouter } from 'react-router-dom';
 
 // Mock the apiClient module
 jest.mock('../services/apiClient', () => ({
@@ -16,6 +17,14 @@ const mockPlayers = [
   { _id: '2', name: 'Player Two', team: { name: 'Team B' }, nationality: 'Oz' },
 ];
 
+const renderWithRouter = (ui) => {
+    return render(
+        <BrowserRouter>
+            {ui}
+        </BrowserRouter>
+    );
+};
+
 describe('WatchlistPage', () => {
   beforeEach(() => {
     getWatchlist.mockClear();
@@ -24,21 +33,21 @@ describe('WatchlistPage', () => {
 
   test('should display loading message initially', () => {
     getWatchlist.mockReturnValueOnce(new Promise(() => {}));
-    render(<WatchlistPage />);
+    renderWithRouter(<WatchlistPage />);
     // The loading spinner has "Loading..." in visually-hidden span
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   test('should display error message if API call fails', async () => {
     getWatchlist.mockRejectedValueOnce(new Error('Failed to fetch'));
-    render(<WatchlistPage />);
+    renderWithRouter(<WatchlistPage />);
     // "Failed to fetch" text will be present
-    await screen.findByText('Failed to fetch');
+    await screen.findByText(/Failed to fetch/i);
   });
 
   test('should display "Your watchlist is empty" if watchlist is empty', async () => {
     getWatchlist.mockResolvedValueOnce([]);
-    render(<WatchlistPage />);
+    renderWithRouter(<WatchlistPage />);
     // The text is split by a <br/> and link, but "Your watchlist is empty." is in the alert box.
     // However, react-testing-library's getByText might need exact match or regex.
     // The component has: Your watchlist is empty. <br/> Go to ...
@@ -48,7 +57,7 @@ describe('WatchlistPage', () => {
 
   test('should display players if watchlist is not empty', async () => {
     getWatchlist.mockResolvedValueOnce(mockPlayers);
-    render(<WatchlistPage />);
+    renderWithRouter(<WatchlistPage />);
     await screen.findByText('Player One');
     expect(screen.getByText('Player Two')).toBeInTheDocument();
 
@@ -62,7 +71,7 @@ describe('WatchlistPage', () => {
     getWatchlist.mockResolvedValueOnce([...mockPlayers]);
     removeFromWatchlist.mockResolvedValueOnce({});
 
-    render(<WatchlistPage />);
+    renderWithRouter(<WatchlistPage />);
 
     await screen.findByText('Player One');
 

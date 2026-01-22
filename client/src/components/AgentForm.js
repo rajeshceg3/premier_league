@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../services/apiClient';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { Form, Button, Row, Col, Card, Spinner, FloatingLabel } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 const AgentForm = () => {
@@ -61,26 +61,32 @@ const AgentForm = () => {
 
   if (loading && id && !name) {
       return (
-          <Container className="d-flex justify-content-center mt-5">
-              <Spinner animation="border" role="status">
+          <div className="d-flex justify-content-center align-items-center" style={{minHeight: '60vh'}}>
+              <Spinner animation="border" role="status" variant="warning">
                   <span className="visually-hidden">Loading...</span>
               </Spinner>
-          </Container>
+          </div>
       );
   }
 
   return (
-    <Container className="mt-4">
-      <Row className="justify-content-md-center">
-        <Col xs={12} md={8} lg={6}>
-          <Card className="shadow-sm">
-            <Card.Header as="h4" className="bg-warning text-dark text-center">
-              {id ? 'Edit Agent' : 'Register New Agent'}
-            </Card.Header>
-            <Card.Body>
+    <div className="fade-in">
+       <div className="mb-4">
+        <Link to="/agents" className="text-decoration-none text-muted small hover-primary">
+            <i className="fas fa-arrow-left me-1"></i> Back to Agents
+        </Link>
+        <h2 className="fw-bold mt-2">{id ? 'Edit Agent Profile' : 'Register New Agent'}</h2>
+        <p className="text-muted">Enter the agent's contact and agency information.</p>
+      </div>
+
+      <Row className="justify-content-center">
+        <Col lg={8} xl={6}>
+          <Card className="border-0 shadow-lg">
+            <Card.Body className="p-4 p-md-5">
               <Form onSubmit={onSubmit}>
-                <Form.Group className="mb-3" controlId="name">
-                  <Form.Label>Name</Form.Label>
+                <h5 className="mb-4 text-warning fw-bold border-bottom pb-2">Agent Information</h5>
+
+                <FloatingLabel controlId="name" label="Full Name" className="mb-3">
                   <Form.Control
                     type="text"
                     name="name"
@@ -88,11 +94,11 @@ const AgentForm = () => {
                     onChange={onChange}
                     required
                     placeholder="e.g. Jorge Mendes"
+                    className="bg-light border-0"
                   />
-                </Form.Group>
+                </FloatingLabel>
 
-                <Form.Group className="mb-3" controlId="email">
-                  <Form.Label>Email</Form.Label>
+                <FloatingLabel controlId="email" label="Email Address" className="mb-3">
                   <Form.Control
                     type="email"
                     name="email"
@@ -100,26 +106,28 @@ const AgentForm = () => {
                     onChange={onChange}
                     required
                     placeholder="e.g. jorge@agency.com"
+                    className="bg-light border-0"
                   />
-                </Form.Group>
+                </FloatingLabel>
 
-                 <Form.Group className="mb-3" controlId="phone">
-                  <Form.Label>Phone</Form.Label>
+                <FloatingLabel controlId="phone" label="Phone Number" className="mb-3">
                   <Form.Control
                     type="text"
                     name="phone"
                     value={phone}
                     onChange={onChange}
                     placeholder="e.g. +44 7700 900000"
+                    className="bg-light border-0"
                   />
-                </Form.Group>
+                </FloatingLabel>
 
-                <div className="d-grid gap-2">
-                  <Button variant="warning" type="submit" disabled={loading}>
-                     {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : (id ? 'Update Agent' : 'Register Agent')}
-                  </Button>
-                  <Button variant="outline-secondary" onClick={() => navigate('/agents')} disabled={loading}>
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <Button variant="light" onClick={() => navigate('/agents')} disabled={loading} className="px-4">
                     Cancel
+                  </Button>
+                  <Button variant="warning" type="submit" disabled={loading} className="px-4 shadow-sm text-white">
+                     {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" /> : null}
+                     {id ? 'Save Changes' : 'Create Agent'}
                   </Button>
                 </div>
               </Form>
@@ -127,7 +135,7 @@ const AgentForm = () => {
           </Card>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 };
 
