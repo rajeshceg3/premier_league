@@ -1,18 +1,17 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const auth = require('../middleware/auth');
 const { Agent, validateAgent } = require('../models/agent');
 
 const router = express.Router();
 
 // GET /api/agents - Get all agents
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   const agents = await Agent.find().select('-__v').sort('name');
   res.send(agents);
 });
 
 // POST /api/agents - Create a new agent
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   const { error } = validateAgent(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -37,7 +36,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/agents/:id - Update an existing agent by ID
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).send('Invalid Agent ID.');
   }
@@ -61,7 +60,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // DELETE /api/agents/:id - Delete an agent by ID
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).send('Invalid Agent ID.');
   }
