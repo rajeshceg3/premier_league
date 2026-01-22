@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose'); // Added for ObjectId validation
 const { Team } = require('../models/team');
 const { Player, validatePlayer } = require('../models/player');
-const auth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -12,7 +11,7 @@ router.get('/', async (req, res) => {
   res.send(players);
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   const { error } = validatePlayer(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -34,7 +33,7 @@ router.post('/', auth, async (req, res) => {
   res.send(player);
 });
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     res.status(400).send('Invalid Player ID.');
     return;
@@ -66,7 +65,7 @@ router.put('/:id', auth, async (req, res) => {
   res.send(player);
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     res.status(400).send('Invalid Player ID.');
     return;

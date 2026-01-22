@@ -5,7 +5,6 @@ const compression = require('compression');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
-const auth = require('../routes/auth');
 const users = require('../routes/users');
 const teams = require('../routes/teams');
 const players = require('../routes/players');
@@ -28,7 +27,6 @@ module.exports = function routes(app) {
   });
   app.use(limiter);
 
-  app.use('/api/auth', auth);
   app.use('/api/users', users);
   app.use('/api/teams', teams);
   app.use('/api/players', players);

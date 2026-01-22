@@ -4,7 +4,6 @@ const { Loan, validateLoan } = require('../models/loan');
 const { Player } = require('../models/player');
 const { Agent } = require('../models/agent');
 const { Team } = require('../models/team');
-const auth = require('../middleware/auth');
 
 router.get('/', async (req, res) => {
   const pageNumber = parseInt(req.query.page) || 1;
@@ -27,7 +26,7 @@ router.get('/', async (req, res) => {
   });
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   const { error } = validateLoan(req.body);
   if (error) {
     res.status(400).send(error.details[0].message);
