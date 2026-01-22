@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../services/apiClient';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { Form, Button, Row, Col, Card, Spinner, FloatingLabel } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 const TeamForm = () => {
@@ -58,26 +58,32 @@ const TeamForm = () => {
 
   if (loading && id && !name) {
     return (
-        <Container className="d-flex justify-content-center mt-5">
-            <Spinner animation="border" role="status">
+        <div className="d-flex justify-content-center align-items-center" style={{minHeight: '60vh'}}>
+            <Spinner animation="border" role="status" variant="primary">
                 <span className="visually-hidden">Loading...</span>
             </Spinner>
-        </Container>
+        </div>
     );
   }
 
   return (
-    <Container className="mt-4">
-      <Row className="justify-content-md-center">
-        <Col xs={12} md={8} lg={6}>
-          <Card className="shadow-sm">
-            <Card.Header as="h4" className="bg-primary text-white text-center">
-              {id ? 'Edit Team' : 'Register New Team'}
-            </Card.Header>
-            <Card.Body>
+    <div className="fade-in">
+       <div className="mb-4">
+        <Link to="/teams" className="text-decoration-none text-muted small hover-primary">
+            <i className="fas fa-arrow-left me-1"></i> Back to Teams
+        </Link>
+        <h2 className="fw-bold mt-2">{id ? 'Edit Team Details' : 'Register New Team'}</h2>
+        <p className="text-muted">Enter the club details and coaching staff information.</p>
+      </div>
+
+      <Row className="justify-content-center">
+        <Col lg={8} xl={6}>
+          <Card className="border-0 shadow-lg">
+            <Card.Body className="p-4 p-md-5">
               <Form onSubmit={onSubmit}>
-                <Form.Group className="mb-3" controlId="name">
-                  <Form.Label>Team Name</Form.Label>
+                <h5 className="mb-4 text-primary fw-bold border-bottom pb-2">Team Information</h5>
+
+                <FloatingLabel controlId="name" label="Team Name" className="mb-3">
                   <Form.Control
                     type="text"
                     name="name"
@@ -85,11 +91,11 @@ const TeamForm = () => {
                     onChange={onChange}
                     required
                     placeholder="e.g. Manchester United"
+                    className="bg-light border-0"
                   />
-                </Form.Group>
+                </FloatingLabel>
 
-                <Form.Group className="mb-3" controlId="coach">
-                  <Form.Label>Coach</Form.Label>
+                <FloatingLabel controlId="coach" label="Head Coach" className="mb-3">
                   <Form.Control
                     type="text"
                     name="coach"
@@ -97,15 +103,17 @@ const TeamForm = () => {
                     onChange={onChange}
                     required
                     placeholder="e.g. Erik ten Hag"
+                    className="bg-light border-0"
                   />
-                </Form.Group>
+                </FloatingLabel>
 
-                <div className="d-grid gap-2">
-                  <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : (id ? 'Update Team' : 'Register Team')}
-                  </Button>
-                  <Button variant="outline-secondary" onClick={() => navigate('/teams')} disabled={loading}>
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <Button variant="light" onClick={() => navigate('/teams')} disabled={loading} className="px-4">
                     Cancel
+                  </Button>
+                  <Button variant="primary" type="submit" disabled={loading} className="px-4 shadow-sm">
+                    {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2"/> : null}
+                    {id ? 'Save Changes' : 'Create Team'}
                   </Button>
                 </div>
               </Form>
@@ -113,7 +121,7 @@ const TeamForm = () => {
           </Card>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 };
 

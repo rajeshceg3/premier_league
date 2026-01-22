@@ -1,19 +1,23 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-jest.mock('axios');
+// Mock the AuthContext
+jest.mock('./context/AuthContext', () => ({
+  useAuth: () => ({
+    user: null,
+    loading: false,
+    login: jest.fn(),
+    logout: jest.fn(),
+    register: jest.fn(),
+  }),
+  AuthProvider: ({ children }) => <div>{children}</div>
+}));
 
-// Manually mock matchMedia for this test file as well to ensure it overrides any global issues or conflicts
-window.matchMedia = window.matchMedia || function() {
-  return {
-    matches: false,
-    addListener: function() {},
-    removeListener: function() {},
-  };
-};
-
-test('renders app title', () => {
+test('renders login page title', () => {
   render(<App />);
-  const linkElement = screen.getByText(/Premier League Loans/i);
-  expect(linkElement).toBeInTheDocument();
+  // Assuming the login page is the default for unauthenticated users
+  // and it has a "Sign In" or "Login" text.
+  // The polished LoginForm has "Welcome Back"
+  const welcomeElement = screen.getByText(/Welcome Back/i);
+  expect(welcomeElement).toBeInTheDocument();
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import { addToWatchlist, removeFromWatchlist } from '../services/apiClient';
 
 const AddToWatchlistButton = ({ playerId, isInitiallyWatched, onToggle }) => {
@@ -30,14 +30,21 @@ const AddToWatchlistButton = ({ playerId, isInitiallyWatched, onToggle }) => {
 
   return (
     <Button
-      variant={watched ? "outline-warning" : "outline-success"}
+      variant={watched ? "warning" : "light"}
       size="sm"
       onClick={handleClick}
       disabled={loading}
+      className={watched ? "text-white shadow-sm" : "text-secondary hover-warning"}
       aria-label={watched ? 'Remove from Watchlist' : 'Add to Watchlist'}
       title={watched ? 'Remove from Watchlist' : 'Add to Watchlist'}
     >
-      {loading ? '...' : (watched ? 'Remove from Watchlist' : 'Add to Watchlist')}
+      {loading ? (
+        <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+      ) : watched ? (
+        <><i className="fas fa-star me-1"></i>Unwatch</>
+      ) : (
+        <><i className="far fa-star me-1"></i>Watch</>
+      )}
     </Button>
   );
 };

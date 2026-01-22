@@ -40,7 +40,7 @@ describe('LoanList Component', () => {
     jest.clearAllMocks();
   });
 
-  test('renders loading spinner initially', () => {
+  test('renders loading spinner initially', async () => {
     apiClient.get.mockImplementation(() => new Promise(() => {}));
 
     render(
@@ -63,7 +63,7 @@ describe('LoanList Component', () => {
 
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
 
-    expect(screen.getByText('Harry Kane')).toBeInTheDocument();
+    expect(await screen.findByText('Harry Kane')).toBeInTheDocument();
   });
 
   test('handles delete action via Modal', async () => {
@@ -83,7 +83,7 @@ describe('LoanList Component', () => {
     fireEvent.click(deleteBtn);
 
     // Modal should appear
-    expect(screen.getByText('Confirm Deletion')).toBeInTheDocument();
+    expect(await screen.findByText('Confirm Deletion')).toBeInTheDocument();
 
     // Click confirm in modal
     const confirmBtn = screen.getByText('Delete Loan');

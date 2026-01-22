@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../services/apiClient';
 import { toast } from 'react-toastify';
-import { Container, Table, Button, Spinner, Badge, Card, Row, Col, Pagination, Modal } from 'react-bootstrap';
+import { Table, Button, Spinner, Badge, Card, Pagination, Modal, InputGroup, Form } from 'react-bootstrap';
 
 const LoanList = () => {
   const [loans, setLoans] = useState([]);
@@ -13,6 +13,9 @@ const LoanList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const pageSize = 10;
+
+  // Search State - Client side filtering for now as API might not support it
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -25,7 +28,6 @@ const LoanList = () => {
     setLoading(true);
     try {
       const { data } = await apiClient.get(`/loans?page=${page}&limit=${pageSize}`);
-      // Handle both legacy (array) and new (object) API responses for robustness
       if (Array.isArray(data)) {
          setLoans(data);
          setTotalPages(1);
@@ -66,7 +68,7 @@ const LoanList = () => {
       setLoans(loans.filter(loan => loan._id !== loanToDelete._id));
       toast.success('Loan deleted successfully.');
       setShowDeleteModal(false);
-      // Refetch if page becomes empty? For now just remove from list.
+      // Refetch logic
       if (loans.length === 1 && currentPage > 1) {
           setCurrentPage(currentPage - 1);
       } else {
@@ -87,8 +89,6 @@ const LoanList = () => {
       if (!loanToReturn) return;
       try {
         const res = await apiClient.post(`/returns/${loanToReturn._id}/return`);
-
-        // Update local state without refetching everything for better UX
         setLoans(loans.map(loan =>
           loan._id === loanToReturn._id
             ? { ...loan, status: 'Returned', returnedDate: res.data.returnedDate || new Date().toISOString() }
@@ -101,84 +101,125 @@ const LoanList = () => {
       }
   };
 
+  // Filter loans based on search term
+  const filteredLoans = loans.filter(loan =>
+      loan.player?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      loan.loaningTeam?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      loan.borrowingTeam?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <Container className="mt-4">
-      <Row className="mb-4 align-items-center">
-        <Col>
-          <h2>Loan Management</h2>
-          <p className="text-muted small mb-0">Total Active/History: {totalItems}</p>
-        </Col>
-        <Col className="text-end">
+    <div className="fade-in">
+       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <div>
+           <h2 className="fw-bold text-secondary mb-1">Loan Management</h2>
+           <p className="text-muted mb-0">Track active and historical player loans.</p>
+        </div>
+        <div className="mt-3 mt-md-0">
            <Link to="/loans/new">
-             <Button variant="primary">
-               <i className="fas fa-plus"></i> Add New Loan
+             <Button variant="info" className="shadow-sm text-white">
+               <i className="fas fa-plus me-2"></i> Create Loan
              </Button>
            </Link>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
-      <Card className="shadow-sm">
-        <Card.Body>
+       <Card className="border-0 shadow-sm mb-4">
+        <Card.Body className="p-3">
+             <InputGroup>
+                <InputGroup.Text className="bg-white border-end-0">
+                    <i className="fas fa-search text-muted"></i>
+                </InputGroup.Text>
+                <Form.Control
+                    type="text"
+                    placeholder="Search by player or team..."
+                    className="border-start-0 ps-0"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </InputGroup>
+        </Card.Body>
+      </Card>
+
+      <Card className="border-0 shadow-sm">
+        <Card.Body className="p-0">
           {loading ? (
              <div className="d-flex justify-content-center py-5">
-                <Spinner animation="border" role="status" variant="primary">
+                <Spinner animation="border" role="status" variant="info">
                   <span className="visually-hidden">Loading...</span>
                 </Spinner>
              </div>
-          ) : loans.length === 0 ? (
-            <div className="text-center py-4">
-              <p className="text-muted">No loans found on file.</p>
-              <Link to="/loans/new">
-                <Button variant="outline-primary" size="sm">Create First Loan</Button>
-              </Link>
+          ) : filteredLoans.length === 0 ? (
+            <div className="text-center py-5">
+               <div className="mb-3 text-muted"><i className="fas fa-handshake-slash fa-3x"></i></div>
+              <p className="text-muted">No loans found matching your criteria.</p>
+              {searchTerm && <Button variant="link" onClick={() => setSearchTerm('')}>Clear Search</Button>}
+              {!searchTerm && (
+                  <Link to="/loans/new">
+                    <Button variant="outline-info" size="sm">Create First Loan</Button>
+                  </Link>
+              )}
             </div>
           ) : (
             <>
                 <div className="table-responsive">
-                <Table hover striped bordered className="align-middle">
-                    <thead className="table-light">
+                <Table hover className="align-middle mb-0 table-borderless">
+                    <thead className="bg-light text-secondary border-bottom">
                     <tr>
-                        <th>Player</th>
-                        <th>From (Loaning)</th>
-                        <th>To (Borrowing)</th>
-                        <th>Agent</th>
-                        <th>Dates</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th className="ps-4 py-3 text-uppercase small fw-bold">Player</th>
+                        <th className="py-3 text-uppercase small fw-bold">Teams</th>
+                        <th className="py-3 text-uppercase small fw-bold">Duration</th>
+                        <th className="py-3 text-uppercase small fw-bold">Status</th>
+                        <th className="pe-4 py-3 text-uppercase small fw-bold text-end">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {loans.map(loan => (
-                        <tr key={loan._id}>
-                        <td className="fw-bold">{loan.player?.name || 'Unknown Player'}</td>
-                        <td>{loan.loaningTeam?.name || 'Unknown Team'}</td>
-                        <td>{loan.borrowingTeam?.name || 'Unknown Team'}</td>
-                        <td>{loan.agent?.name || <span className="text-muted">None</span>}</td>
-                        <td>
-                            <div className="small">
-                            <div><span className="text-muted">Start:</span> {new Date(loan.startDate).toLocaleDateString()}</div>
-                            <div><span className="text-muted">End:</span> {new Date(loan.endDate).toLocaleDateString()}</div>
+                    {filteredLoans.map(loan => (
+                        <tr key={loan._id} className="border-bottom">
+                        <td className="ps-4 py-3">
+                            <div className="d-flex align-items-center">
+                                <div className="bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center me-3" style={{width: '40px', height: '40px'}}>
+                                    <i className="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <div className="fw-bold text-dark">{loan.player?.name || 'Unknown'}</div>
+                                    <div className="small text-muted">{loan.agent?.name ? `Agent: ${loan.agent.name}` : 'No Agent'}</div>
+                                </div>
                             </div>
                         </td>
-                        <td>
+                        <td className="py-3">
+                            <div className="d-flex align-items-center small">
+                                <span className="fw-bold">{loan.loaningTeam?.name}</span>
+                                <i className="fas fa-long-arrow-alt-right mx-2 text-muted"></i>
+                                <span className="fw-bold">{loan.borrowingTeam?.name}</span>
+                            </div>
+                        </td>
+                        <td className="py-3">
+                            <div className="small text-muted">
+                                <div><i className="far fa-calendar-alt me-1"></i> {new Date(loan.startDate).toLocaleDateString()}</div>
+                                <div><i className="far fa-flag me-1"></i> {new Date(loan.endDate).toLocaleDateString()}</div>
+                            </div>
+                        </td>
+                        <td className="py-3">
                             {loan.status === 'Returned' ? (
-                            <Badge bg="secondary">Returned</Badge>
+                            <Badge bg="secondary" className="px-2 py-1 fw-normal">Returned</Badge>
                             ) : (
-                            <Badge bg="success">Active</Badge>
+                            <Badge bg="success" className="px-2 py-1 fw-normal">Active</Badge>
                             )}
                         </td>
-                        <td>
-                            <div className="d-flex gap-2">
+                        <td className="pe-4 py-3 text-end">
+                            <div className="d-flex justify-content-end gap-2">
                             <Link to={`/loans/edit/${loan._id}`}>
-                                <Button variant="outline-primary" size="sm" title="Edit">
+                                <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
                                 <i className="fas fa-edit"></i>
                                 </Button>
                             </Link>
 
                             {loan.status !== 'Returned' && (
                                 <Button
-                                variant="outline-warning"
+                                variant="light"
                                 size="sm"
+                                className="text-warning hover-warning"
                                 onClick={() => confirmReturn(loan)}
                                 title="Mark as Returned"
                                 >
@@ -187,8 +228,9 @@ const LoanList = () => {
                             )}
 
                             <Button
-                                variant="outline-danger"
+                                variant="light"
                                 size="sm"
+                                className="text-danger hover-danger"
                                 onClick={() => confirmDelete(loan)}
                                 title="Delete"
                             >
@@ -203,7 +245,7 @@ const LoanList = () => {
                 </div>
 
                 {totalPages > 1 && (
-                    <div className="d-flex justify-content-center mt-3">
+                    <div className="d-flex justify-content-center mt-4">
                         <Pagination>
                             <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
                             <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
@@ -227,44 +269,44 @@ const LoanList = () => {
       </Card>
 
       {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-        <Modal.Header closeButton>
-            <Modal.Title>Confirm Deletion</Modal.Title>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered backdrop="static">
+        <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="h5 fw-bold text-danger">Confirm Deletion</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-            Are you sure you want to delete the loan for <strong>{loanToDelete?.player?.name}</strong>?
-            This action cannot be undone.
+        <Modal.Body className="pt-2">
+            <p>Are you sure you want to delete the loan for <strong>{loanToDelete?.player?.name}</strong>?</p>
+            <p className="small text-muted mb-0">This action cannot be undone.</p>
         </Modal.Body>
-        <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+        <Modal.Footer className="border-0 pt-0">
+            <Button variant="light" onClick={() => setShowDeleteModal(false)}>
                 Cancel
             </Button>
             <Button variant="danger" onClick={executeDelete}>
-                Delete Loan
+                <i className="fas fa-trash me-2"></i>Delete Loan
             </Button>
         </Modal.Footer>
       </Modal>
 
       {/* Return Confirmation Modal */}
-      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered>
-        <Modal.Header closeButton>
-            <Modal.Title>Confirm Return</Modal.Title>
+      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} centered backdrop="static">
+        <Modal.Header closeButton className="border-0 pb-0">
+            <Modal.Title className="h5 fw-bold text-warning">Confirm Return</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-            Are you sure you want to mark the loan for <strong>{loanToReturn?.player?.name}</strong> as returned?
-            This will calculate the final fee.
+        <Modal.Body className="pt-2">
+            <p>Are you sure you want to mark the loan for <strong>{loanToReturn?.player?.name}</strong> as returned?</p>
+            <p className="small text-muted mb-0">This indicates the player has returned to their parent club.</p>
         </Modal.Body>
-        <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowReturnModal(false)}>
+        <Modal.Footer className="border-0 pt-0">
+            <Button variant="light" onClick={() => setShowReturnModal(false)}>
                 Cancel
             </Button>
-            <Button variant="warning" onClick={executeReturn}>
-                Mark as Returned
+            <Button variant="warning" onClick={executeReturn} className="text-white">
+                <i className="fas fa-check me-2"></i>Confirm Return
             </Button>
         </Modal.Footer>
       </Modal>
 
-    </Container>
+    </div>
   );
 };
 

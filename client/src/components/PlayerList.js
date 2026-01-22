@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Container, Table, Button, Spinner, Card, Row, Col, Modal } from 'react-bootstrap';
+import { Table, Button, Spinner, Card, Row, Col, Modal, Form, InputGroup } from 'react-bootstrap';
 import apiClient, { getWatchlist } from '../services/apiClient';
 import AddToWatchlistButton from './AddToWatchlistButton';
 
 const PlayerList = () => {
   const [players, setPlayers] = useState([]);
+  const [filteredPlayers, setFilteredPlayers] = useState([]);
   const [userWatchlistIds, setUserWatchlistIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -18,31 +20,22 @@ const PlayerList = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch players and watchlist in parallel
         const [playersRes, watchlistData] = await Promise.allSettled([
           apiClient.get('/players'),
           getWatchlist()
         ]);
 
-        // Handle Players Response
         if (playersRes.status === 'fulfilled') {
           setPlayers(playersRes.value.data);
+          setFilteredPlayers(playersRes.value.data);
         } else {
-          console.error("Failed to fetch players", playersRes.reason);
           toast.error(playersRes.reason.response?.data?.message || 'Failed to fetch players.');
         }
 
-        // Handle Watchlist Response
         if (watchlistData.status === 'fulfilled') {
            setUserWatchlistIds(new Set(watchlistData.value.map(p => p._id)));
-        } else {
-           console.error("Failed to fetch watchlist", watchlistData.reason);
-           // Silent fail for watchlist is acceptable, but logging is good.
         }
-
       } catch (err) {
-        // Should not happen with Promise.allSettled unless something catastrophic
-        console.error("Unexpected error in fetchData", err);
         toast.error('An unexpected error occurred while loading data.');
       } finally {
         setLoading(false);
@@ -51,6 +44,14 @@ const PlayerList = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const results = players.filter(player =>
+      player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      player.position.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredPlayers(results);
+  }, [searchTerm, players]);
 
   const confirmDelete = (player) => {
     setPlayerToDelete(player);
@@ -61,7 +62,11 @@ const PlayerList = () => {
     if (!playerToDelete) return;
     try {
       await apiClient.delete(`/players/${playerToDelete._id}`);
-      setPlayers(players.filter(player => player._id !== playerToDelete._id));
+      const updatedPlayers = players.filter(player => player._id !== playerToDelete._id);
+      setPlayers(updatedPlayers);
+      setFilteredPlayers(updatedPlayers.filter(player =>
+        player.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
       toast.success('Player deleted successfully.');
       setShowDeleteModal(false);
     } catch (err) {
@@ -70,73 +75,96 @@ const PlayerList = () => {
   };
 
   return (
-    <Container className="mt-4">
-      <Row className="mb-4 align-items-center">
-        <Col>
-          <h2>Player Management</h2>
-        </Col>
-        <Col className="text-end">
+    <div className="fade-in">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <div>
+           <h2 className="fw-bold text-secondary mb-1">Player Management</h2>
+           <p className="text-muted mb-0">Manage player profiles and details.</p>
+        </div>
+        <div className="d-flex gap-2 mt-3 mt-md-0">
           <Link to="/players/new">
-            <Button variant="primary">
-              <i className="fas fa-plus"></i> Add New Player
+            <Button variant="primary" className="shadow-sm">
+              <i className="fas fa-plus me-2"></i> Add Player
             </Button>
           </Link>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
-      <Card className="shadow-sm">
-        <Card.Body>
+      <Card className="border-0 shadow-sm mb-4">
+        <Card.Body className="p-3">
+             <InputGroup>
+                <InputGroup.Text className="bg-white border-end-0">
+                    <i className="fas fa-search text-muted"></i>
+                </InputGroup.Text>
+                <Form.Control
+                    type="text"
+                    placeholder="Search players by name or position..."
+                    className="border-start-0 ps-0"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </InputGroup>
+        </Card.Body>
+      </Card>
+
+      <Card className="border-0 shadow-sm">
+        <Card.Body className="p-0">
           {loading ? (
             <div className="d-flex justify-content-center py-5">
               <Spinner animation="border" role="status" variant="primary">
                 <span className="visually-hidden">Loading...</span>
               </Spinner>
             </div>
-          ) : players.length === 0 ? (
-            <div className="text-center py-4">
+          ) : filteredPlayers.length === 0 ? (
+            <div className="text-center py-5">
+              <div className="mb-3 text-muted"><i className="fas fa-users-slash fa-3x"></i></div>
               <p className="text-muted">No players found.</p>
-              <Link to="/players/new">
-                <Button variant="outline-primary" size="sm">Create First Player</Button>
-              </Link>
+              {searchTerm && <Button variant="link" onClick={() => setSearchTerm('')}>Clear Search</Button>}
             </div>
           ) : (
             <div className="table-responsive">
-              <Table hover striped bordered className="align-middle">
-                <thead className="table-light">
+              <Table hover className="align-middle mb-0 table-borderless">
+                <thead className="bg-light text-secondary border-bottom">
                   <tr>
-                    <th>Name</th>
-                    <th>Position</th>
-                    <th>Jersey Number</th>
-                    <th>Actions</th>
+                    <th className="ps-4 py-3 text-uppercase small fw-bold">Name</th>
+                    <th className="py-3 text-uppercase small fw-bold">Position</th>
+                    <th className="py-3 text-uppercase small fw-bold">Jersey</th>
+                    <th className="pe-4 py-3 text-uppercase small fw-bold text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {players.map(player => (
-                    <tr key={player._id}>
-                      <td className="fw-bold">{player.name}</td>
-                      <td>{player.position}</td>
-                      <td>{player.jerseyNumber}</td>
-                      <td>
-                        <div className="d-flex gap-2">
+                  {filteredPlayers.map(player => (
+                    <tr key={player._id} className="border-bottom">
+                      <td className="ps-4 py-3">
+                          <div className="d-flex align-items-center">
+                              <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style={{width: '40px', height: '40px'}}>
+                                  <span className="fw-bold">{player.name.charAt(0)}</span>
+                              </div>
+                              <span className="fw-bold text-dark">{player.name}</span>
+                          </div>
+                      </td>
+                      <td className="py-3"><span className="badge bg-light text-dark border">{player.position}</span></td>
+                      <td className="py-3 text-muted font-monospace">#{player.jerseyNumber}</td>
+                      <td className="pe-4 py-3 text-end">
+                        <div className="d-flex justify-content-end gap-2">
+                          <AddToWatchlistButton
+                            playerId={player._id}
+                            isInitiallyWatched={userWatchlistIds.has(player._id)}
+                          />
                           <Link to={`/players/edit/${player._id}`}>
-                            <Button variant="outline-primary" size="sm" title="Edit">
+                            <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
                               <i className="fas fa-edit"></i>
                             </Button>
                           </Link>
-
                           <Button
-                            variant="outline-danger"
+                            variant="light"
                             size="sm"
+                            className="text-danger hover-danger"
                             onClick={() => confirmDelete(player)}
                             title="Delete"
                           >
                             <i className="fas fa-trash"></i>
                           </Button>
-
-                          <AddToWatchlistButton
-                            playerId={player._id}
-                            isInitiallyWatched={userWatchlistIds.has(player._id)}
-                          />
                         </div>
                       </td>
                     </tr>
@@ -148,26 +176,24 @@ const PlayerList = () => {
         </Card.Body>
       </Card>
 
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered backdrop="static">
+        <Modal.Header closeButton className="border-0 pb-0">
+           <Modal.Title className="h5 fw-bold text-danger">Confirm Deletion</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete player <strong>{playerToDelete?.name}</strong>?
-          This action cannot be undone.
+        <Modal.Body className="pt-2">
+          <p>Are you sure you want to delete player <strong>{playerToDelete?.name}</strong>?</p>
+          <p className="small text-muted mb-0">This action cannot be undone and will remove all associated records.</p>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="light" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
           <Button variant="danger" onClick={executeDelete}>
-            Delete Player
+            <i className="fas fa-trash me-2"></i>Delete Player
           </Button>
         </Modal.Footer>
       </Modal>
-
-    </Container>
+    </div>
   );
 };
 

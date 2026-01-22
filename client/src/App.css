@@ -1,379 +1,105 @@
-/* App.css */
+/* New App.css focused on Layout */
 
-/* Main App Container */
-.App {
-  display: flex; /* Use flexbox for sidebar layout */
-  min-height: 100vh; /* Ensure app takes full viewport height */
+/* Reset for the app shell */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-body);
 }
 
-/* Sidebar Navigation Styling */
-nav {
-  width: 250px; /* Fixed width for the sidebar */
-  background-color: #3498db; /* Primary color */
-  padding: 20px 0; /* Padding top/bottom, no horizontal padding for full-width links */
-  height: 100vh; /* Full viewport height */
+/* Sidebar Specific Styles */
+.sidebar {
+  width: 260px;
+  background-color: var(--bg-sidebar);
+  color: var(--text-light);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1030;
+  box-shadow: var(--shadow-xl);
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-brand {
+  padding: 0.5rem 0.5rem;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  padding: 0 1rem;
+}
+
+.sidebar-link {
+  color: #cbd5e1 !important; /* Slate 300 */
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff !important;
+  transform: translateX(4px);
+}
+
+.sidebar-link.active {
+  background-color: var(--primary-color);
+  color: #fff !important;
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar-link i {
+  width: 20px;
+  text-align: center;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  color: #ffffff;
-  position: fixed; /* Fixed position */
-  top: 0;
-  left: 0;
-  overflow-y: auto; /* Scroll if content overflows */
+  min-width: 0;
+  transition: margin-left 0.3s ease-in-out;
 }
 
-.app-logo {
-  font-size: 1.5em;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 20px;
-  padding: 0 15px; /* Add some horizontal padding for the logo text */
+/* Desktop: Shift content when sidebar is visible */
+@media (min-width: 992px) {
+  .content-wrapper {
+    margin-left: 260px;
+  }
 }
 
-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Mobile: Full width content, sidebar hidden or offcanvas handled by Bootstrap */
+@media (max-width: 991.98px) {
+  .sidebar {
+    display: none; /* We use Bootstrap Offcanvas for mobile sidebar */
+  }
+  .content-wrapper {
+    margin-left: 0;
+  }
+}
+
+/* Login/Register Container Centering */
+.auth-container {
   display: flex;
-  flex-direction: column; /* Stack links vertically */
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 1rem;
 }
 
-nav ul li {
-  /* margin-right removed, not needed for vertical layout */
-}
-
-nav ul li:last-child {
-  /* margin-right: 0; removed */
-}
-
-nav a {
-  color: #ffffff; /* White text for contrast */
-  text-decoration: none;
-  font-size: 1.1em;
-  padding: 12px 20px; /* Adjusted padding for vertical links */
-  display: block; /* Make links full-width */
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-  display: flex; /* For icon alignment */
-  align-items: center; /* For icon alignment */
-}
-
-nav a i {
-  margin-right: 8px; /* Space between icon and text */
-  width: 20px; /* Fixed width for icon container for alignment */
-  text-align: center; /* Center icon within its container */
-}
-
-nav a:hover, nav a.active {
-  background-color: #2ecc71; /* Secondary color */
-  color: #ffffff; /* White text for contrast */
-  transform: translateX(3px); /* Subtle pop-out effect */
-}
-
-nav a:focus {
-  outline: 2px solid #ffffff;
-  outline-offset: -3px; /* Adjust to bring outline slightly inwards or on the edge */
-  /* Alternatively, a box-shadow can work well: */
-  /* box-shadow: 0 0 0 2px #ffffff inset; */
-}
-
-/* Main Content Area */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.main-content {
-  flex-grow: 1; /* Takes remaining space */
-  padding: 25px;
-  margin-left: 250px; /* Offset by sidebar width */
-  background-color: #ecf0f1; /* Use the general background color */
-  animation: fadeIn 0.5s ease-in-out forwards;
-  /* Removed fixed margin, border-radius, box-shadow from previous style */
-  /* overflow-y: auto; /* If content might exceed viewport height and needs its own scroll */
-}
-
-
-/* Headings */
-h2 {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.8em;
-  color: #34495e; /* Text color */
-  margin-bottom: 20px;
-  border-bottom: 1px solid #bdc3c7; /* Lighter gray for border */
-  padding-bottom: 10px;
-}
-
-/* Form Styling */
-form {
-  background-color: #fff;
-  padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  max-width: 500px; /* Limit form width */
-  margin: 20px auto; /* Center forms */
-}
-
-form div {
-  margin-bottom: 15px;
-}
-
-form label {
-  display: block;
-  margin-bottom: 8px; /* Increased margin */
-  font-family: 'Montserrat', sans-serif; /* Use Montserrat for labels */
-  font-weight: 600; /* Slightly bolder */
-  color: #34495e; /* Text color */
-}
-
-form input[type="text"],
-form input[type="email"],
-form input[type="password"],
-form input[type="number"],
-form input[type="date"],
-form select {
-  width: calc(100% - 26px); /* Adjusted for 12px padding + 1px border each side */
-  padding: 12px; /* Increased padding */
-  border: 1px solid #bdc3c7; /* Consistent light gray border */
-  border-radius: 4px;
-  font-family: 'Open Sans', sans-serif; /* Ensure Open Sans */
-  font-size: 1em;
-  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition for focus */
-}
-
-form input:focus, form select:focus {
-  border-color: #3498db; /* Primary color */
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25); /* Softer glow effect */
-}
-
-/* Button Styling */
-button,
-a.button-link { /* For link styled as button */
-  background-color: #3498db; /* Primary color */
-  color: #ffffff; /* White text */
-  border: none;
-  padding: 10px 20px;
-  font-size: 1em;
-  font-weight: bold;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; /* Added box-shadow transition */
-  text-decoration: none; /* For <a> tags */
-  display: inline-block; /* For <a> tags */
-  margin-top: 10px;
-}
-
-button:hover,
-a.button-link:hover {
-  background-color: #2980b9; /* Darker primary */
-  transform: translateY(-2px); /* Slightly more pronounced */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Added subtle shadow */
-}
-
-button:focus,
-a.button-link:focus {
-  outline: 3px solid #2980b9; /* Using a darker shade of primary for outline */
-  outline-offset: 1px;
-  /* box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.5), 0 4px 8px rgba(0, 0, 0, 0.15); */ /* Alternative focus */
-}
-
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Specifically for form buttons */
-form button[type="submit"] {
-  background-color: #2ecc71; /* Secondary color */
-  color: #ffffff; /* White text */
-}
-form button[type="submit"]:hover {
-  background-color: #27ae60; /* Darker secondary */
-}
-form button[type="button"] { /* Accent/Cancel buttons */
-  background-color: #f1c40f; /* Accent color */
-  color: #34495e; /* Text color for contrast */
-  margin-left: 10px;
-}
-form button[type="button"]:hover {
-  background-color: #f39c12; /* Darker accent */
-}
-
-
-/* Table Styling */
-table {
+.auth-card {
   width: 100%;
-  margin: 20px 0;
-  border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-th, td {
-  border: 1px solid #bdc3c7; /* Lighter gray border */
-  padding: 15px 12px; /* Adjusted padding */
-  text-align: left;
-  font-family: 'Open Sans', sans-serif; /* Ensure Open Sans for table text */
-}
-
-th {
-  background-color: #3498db; /* Primary color */
-  font-family: 'Montserrat', sans-serif; /* Ensure Montserrat for headers */
-  font-weight: 600; /* Adjusted weight */
-  color: #ffffff; /* White text */
-}
-
-tr:nth-child(even) {
-  background-color: #ecf0f1; /* Background color */
-}
-
-tr { /* Added transition to base tr for hover effect */
-  transition: background-color 0.2s ease-in-out;
-}
-
-tr:hover {
-  background-color: #f5f7fa; /* Very light gray for subtle hover */
-}
-
-td button, td a {
-  margin-right: 5px;
-  padding: 6px 12px; /* Smaller padding for buttons in tables */
-  font-size: 0.9em;
-}
-td button:last-child, td a:last-child {
-  margin-right: 0;
-}
-
-
-/* Error and Message Styling */
-p[style*="color: red"] { /* Targets inline styled error messages */
-  color: #D8000C !important; /* Important to override inline style if necessary */
-  background-color: #FFD2D2;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  border: 1px solid #D8000C;
-}
-
-p[style*="color: green"] { /* Targets inline styled success messages */
-  color: #4F8A10 !important;
-  background-color: #DFF2BF;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  border: 1px solid #4F8A10;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .App {
-    flex-direction: column; /* Stack sidebar and content vertically */
-  }
-
-  nav {
-    width: 100%; /* Full width for top bar */
-    height: auto; /* Auto height for content */
-    position: static; /* Change from fixed to static for normal flow */
-    /* overflow-y: visible; /* Not needed for horizontal bar */
-    /* border-bottom: 2px solid #2ecc71; /* Optional: border for visual separation */
-  }
-
-  .app-logo {
-    /* Potentially hide or restyle logo for small screens if needed */
-    /* For now, keep it, but ensure it fits */
-    padding: 10px 15px; /* Adjust padding */
-    margin-bottom: 10px;
-  }
-
-  nav ul {
-    flex-direction: row; /* Links in a row */
-    justify-content: space-around; /* Distribute links */
-    /* align-items: center; */
-  }
-
-  nav ul li {
-    margin-right: 0; /* Remove specific margins for row layout */
-    margin-bottom: 0; /* Remove bottom margin */
-    /* width: auto; /* Auto width for items in a row */
-    /* text-align: center; /* Already centered by default or not needed */
-  }
-
-  nav a {
-    padding: 10px; /* Adjust padding for smaller touch targets */
-    /* display: inline-block; /* Or keep block but manage li width */
-  }
-  nav a:hover, nav a.active {
-    transform: none; /* Disable pop-out effect for top bar */
-  }
-
-  .main-content {
-    margin-left: 0; /* No left margin when sidebar is on top */
-    padding: 20px; /* Reset padding if needed */
-  }
-
-  /* Responsive table styles - kept from previous version, might need review */
-  /* Make tables scrollable on small screens */
-  table, thead, tbody, th, td, tr {
-		display: block;
-	}
-
-	thead tr {
-		position: absolute;
-		top: -9999px;
-		left: -9999px;
-	}
-
-	tr { border: 1px solid #ccc; margin-bottom: 5px; }
-
-	td {
-		border: none;
-		border-bottom: 1px solid #eee;
-		position: relative;
-		padding-left: 50%; /* Space for data label */
-    white-space: normal;
-    text-align: right; /* Align content to the right */
-	}
-
-	td:before {
-		position: absolute;
-		top: 6px;
-		left: 6px;
-		width: 45%;
-		padding-right: 10px;
-		white-space: nowrap;
-    text-align: left; /* Align label to the left */
-    font-weight: bold;
-	}
-
-  /* Label table cells - The :nth-of-type approach is brittle. */
-  /* For a robust solution, use data attributes on <td> elements in your JS/HTML, like: */
-  /* <td data-label="Name">Player Name</td> */
-  /* Then, in CSS: td:before { content: attr(data-label); } */
-  /* Removing the brittle :nth-of-type rules below: */
-  /* table td:nth-of-type(1):before { content: "Name"; } */
-  /* table td:nth-of-type(2):before { content: "Position"; } */
-  /* table td:nth-of-type(3):before { content: "Jersey Nr"; } */
-  /* table td:nth-of-type(4):before { content: "Actions"; } */
-  /* Adjust other table labels as needed based on actual content */
-
-  form {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-}
-
-/* Dashboard specific styling */
-.dashboard-welcome {
-  font-size: 1.2em;
-  margin-bottom: 20px;
-}
-
-/* Link component styling if it needs to be different from nav a */
-.Link {
-  color: #3498db; /* Primary color */
-  text-decoration: none;
-}
-
-.Link:hover {
-  text-decoration: underline;
+  max-width: 450px;
+  background: white;
+  padding: 2.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
 }
