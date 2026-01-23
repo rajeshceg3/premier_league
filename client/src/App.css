@@ -1,105 +1,195 @@
-/* New App.css focused on Layout */
+/* Polish for App Layout */
 
-/* Reset for the app shell */
+/* --- App Shell --- */
 .app-shell {
   display: flex;
   min-height: 100vh;
   background-color: var(--bg-body);
+  overflow-x: hidden; /* Prevent horizontal scroll during transitions */
 }
 
-/* Sidebar Specific Styles */
+/* --- Sidebar Styling --- */
 .sidebar {
   width: 260px;
-  background-color: var(--bg-sidebar);
-  color: var(--text-light);
+  background: linear-gradient(180deg, var(--slate-900) 0%, #020617 100%);
+  color: var(--slate-300);
   height: 100vh;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 1030;
-  box-shadow: var(--shadow-xl);
-  transition: transform 0.3s ease-in-out;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2); /* Deep shadow */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
 }
 
+/* Brand Area */
 .sidebar-brand {
-  padding: 0.5rem 0.5rem;
+  padding: 1.5rem 1.5rem 2rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.brand-icon i {
+  color: white;
+}
+
+/* Navigation Links */
 .sidebar-heading {
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-  padding: 0 1rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate-500);
+  padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+  font-weight: 700;
 }
 
 .sidebar-link {
-  color: #cbd5e1 !important; /* Slate 300 */
-  padding: 0.75rem 1rem;
+  color: var(--slate-400) !important;
+  padding: 0.875rem 1.5rem;
+  margin: 0.25rem 0.75rem;
   border-radius: var(--radius-md);
   transition: all 0.2s ease;
   font-weight: 500;
   display: flex;
   align-items: center;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
 }
 
 .sidebar-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--slate-100) !important;
   transform: translateX(4px);
 }
 
 .sidebar-link.active {
-  background-color: var(--primary-color);
-  color: #fff !important;
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), transparent);
+  color: white !important;
+  border-left: 3px solid var(--primary-500);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0; /* Flat left edge */
+  margin-left: 0; /* Extend to edge */
+  padding-left: 2.25rem; /* Compensate for margin removal */
+}
+
+.sidebar-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary-500);
+  box-shadow: 0 0 12px var(--primary-500);
 }
 
 .sidebar-link i {
-  width: 20px;
+  width: 24px;
   text-align: center;
+  transition: transform 0.2s ease;
 }
 
-/* Content Wrapper */
+.sidebar-link:hover i {
+  transform: scale(1.1);
+  color: var(--primary-400);
+}
+
+/* User Profile Section (Bottom) */
+.user-profile {
+  margin: auto 1rem 1rem 1rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.user-profile:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Content Area --- */
 .content-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  transition: margin-left 0.3s ease-in-out;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--slate-50);
 }
 
-/* Desktop: Shift content when sidebar is visible */
+/* Desktop Logic */
 @media (min-width: 992px) {
   .content-wrapper {
     margin-left: 260px;
   }
 }
 
-/* Mobile: Full width content, sidebar hidden or offcanvas handled by Bootstrap */
+/* Mobile Logic */
 @media (max-width: 991.98px) {
   .sidebar {
-    display: none; /* We use Bootstrap Offcanvas for mobile sidebar */
+    display: none; /* Handled by Offcanvas */
   }
   .content-wrapper {
     margin-left: 0;
   }
 }
 
-/* Login/Register Container Centering */
+/* --- Auth Pages --- */
 .auth-container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  padding: 1rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative Background Blobs for Auth */
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+  filter: blur(80px);
+}
+.auth-container::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+  filter: blur(80px);
 }
 
 .auth-card {
   width: 100%;
-  max-width: 450px;
-  background: white;
-  padding: 2.5rem;
-  border-radius: var(--radius-lg);
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 3rem 2.5rem;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-2xl);
+  position: relative;
+  z-index: 10;
 }
