@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import apiClient from '../services/apiClient';
 import { toast } from 'react-toastify';
 import { Table, Button, Spinner, Badge, Card, Pagination, Modal, InputGroup, Form, Row, Col } from 'react-bootstrap';
+import { useAuth } from '../context/AuthContext';
 
 const LoanList = () => {
+  const { user } = useAuth();
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -116,11 +118,13 @@ const LoanList = () => {
            <p className="text-muted mb-0">Track active and historical player loans.</p>
         </div>
         <div className="mt-3 mt-md-0">
-           <Link to="/loans/new">
-             <Button variant="info" className="shadow-sm text-white rounded-pill px-4">
-               <i className="fas fa-plus me-2"></i> Create Loan
-             </Button>
-           </Link>
+           { user && (
+                <Link to="/loans/new">
+                    <Button variant="info" className="shadow-sm text-white rounded-pill px-4">
+                    <i className="fas fa-plus me-2"></i> Create Loan
+                    </Button>
+                </Link>
+           )}
         </div>
       </div>
 
@@ -154,7 +158,7 @@ const LoanList = () => {
               <h5 className="fw-bold text-dark">No Loans Found</h5>
               <p className="text-muted">No loans match your search criteria.</p>
               {searchTerm && <Button variant="link" onClick={() => setSearchTerm('')}>Clear Search</Button>}
-              {!searchTerm && (
+              {!searchTerm && user && (
                   <Link to="/loans/new">
                     <Button variant="outline-primary" size="sm">Create First Loan</Button>
                   </Link>
@@ -211,35 +215,37 @@ const LoanList = () => {
                                 )}
                             </td>
                             <td className="pe-4 py-3 text-end">
-                                <div className="d-flex justify-content-end gap-2 opacity-75 hover-opacity-100">
-                                <Link to={`/loans/edit/${loan._id}`}>
-                                    <Button variant="light" size="sm" className="btn-icon rounded-circle shadow-sm" title="Edit">
-                                    <i className="fas fa-pencil-alt text-secondary"></i>
-                                    </Button>
-                                </Link>
+                                { user && (
+                                    <div className="d-flex justify-content-end gap-2 opacity-75 hover-opacity-100">
+                                        <Link to={`/loans/edit/${loan._id}`}>
+                                            <Button variant="light" size="sm" className="btn-icon rounded-circle shadow-sm" title="Edit">
+                                            <i className="fas fa-pencil-alt text-secondary"></i>
+                                            </Button>
+                                        </Link>
 
-                                {loan.status !== 'Returned' && (
-                                    <Button
-                                    variant="light"
-                                    size="sm"
-                                    className="btn-icon rounded-circle shadow-sm"
-                                    onClick={() => confirmReturn(loan)}
-                                    title="Mark as Returned"
-                                    >
-                                    <i className="fas fa-undo text-warning"></i>
-                                    </Button>
+                                        {loan.status !== 'Returned' && (
+                                            <Button
+                                            variant="light"
+                                            size="sm"
+                                            className="btn-icon rounded-circle shadow-sm"
+                                            onClick={() => confirmReturn(loan)}
+                                            title="Mark as Returned"
+                                            >
+                                            <i className="fas fa-undo text-warning"></i>
+                                            </Button>
+                                        )}
+
+                                        <Button
+                                            variant="light"
+                                            size="sm"
+                                            className="btn-icon rounded-circle shadow-sm"
+                                            onClick={() => confirmDelete(loan)}
+                                            title="Delete"
+                                        >
+                                            <i className="fas fa-trash-alt text-danger"></i>
+                                        </Button>
+                                    </div>
                                 )}
-
-                                <Button
-                                    variant="light"
-                                    size="sm"
-                                    className="btn-icon rounded-circle shadow-sm"
-                                    onClick={() => confirmDelete(loan)}
-                                    title="Delete"
-                                >
-                                    <i className="fas fa-trash-alt text-danger"></i>
-                                </Button>
-                                </div>
                             </td>
                             </tr>
                         ))}
@@ -291,17 +297,19 @@ const LoanList = () => {
                                 <div><i className="far fa-calendar-times me-2"></i>{new Date(loan.endDate).toLocaleDateString()}</div>
                             </div>
 
-                            <div className="d-grid gap-2 d-flex justify-content-end">
-                                <Link to={`/loans/edit/${loan._id}`} className="flex-grow-1">
-                                    <Button variant="light" className="w-100 border">Edit</Button>
-                                </Link>
-                                {loan.status !== 'Returned' && (
-                                    <Button variant="warning" className="text-white flex-grow-1" onClick={() => confirmReturn(loan)}>Return</Button>
-                                )}
-                                <Button variant="outline-danger" className="flex-grow-0" onClick={() => confirmDelete(loan)}>
-                                    <i className="fas fa-trash-alt"></i>
-                                </Button>
-                            </div>
+                            { user && (
+                                <div className="d-grid gap-2 d-flex justify-content-end">
+                                    <Link to={`/loans/edit/${loan._id}`} className="flex-grow-1">
+                                        <Button variant="light" className="w-100 border">Edit</Button>
+                                    </Link>
+                                    {loan.status !== 'Returned' && (
+                                        <Button variant="warning" className="text-white flex-grow-1" onClick={() => confirmReturn(loan)}>Return</Button>
+                                    )}
+                                    <Button variant="outline-danger" className="flex-grow-0" onClick={() => confirmDelete(loan)}>
+                                        <i className="fas fa-trash-alt"></i>
+                                    </Button>
+                                </div>
+                            )}
                         </Card.Body>
                     </Card>
                 ))}

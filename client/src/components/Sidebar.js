@@ -4,8 +4,7 @@ import { Nav } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
-  const { logout } = useAuth();
-  const { user } = useAuth(); // Assuming user object has name/email
+  const { user, logout } = useAuth();
 
   return (
     <div className="sidebar">
@@ -17,10 +16,12 @@ const Sidebar = () => {
       </div>
 
       <Nav className="flex-column mb-auto pt-2">
-        <Nav.Link as={NavLink} to="/dashboard" className="sidebar-link">
-          <i className="fas fa-chart-line"></i>
-          <span className="ms-3">Dashboard</span>
-        </Nav.Link>
+        { user && (
+            <Nav.Link as={NavLink} to="/dashboard" className="sidebar-link">
+                <i className="fas fa-chart-line"></i>
+                <span className="ms-3">Dashboard</span>
+            </Nav.Link>
+        )}
 
         <div className="sidebar-heading">Entities</div>
 
@@ -41,29 +42,43 @@ const Sidebar = () => {
           <span className="ms-3">Loans</span>
         </Nav.Link>
 
-        <div className="sidebar-heading">Tools</div>
-
-        <Nav.Link as={NavLink} to="/watchlist" className="sidebar-link">
-          <i className="fas fa-star"></i>
-          <span className="ms-3">Watchlist</span>
-        </Nav.Link>
+        { user && (
+            <>
+                <div className="sidebar-heading">Tools</div>
+                <Nav.Link as={NavLink} to="/watchlist" className="sidebar-link">
+                    <i className="fas fa-star"></i>
+                    <span className="ms-3">Watchlist</span>
+                </Nav.Link>
+            </>
+        )}
       </Nav>
 
       <div className="mt-auto">
-        <div className="user-profile d-flex align-items-center gap-3 cursor-pointer">
-          <div className="rounded-circle d-flex align-items-center justify-content-center shadow-sm text-white" style={{width: '40px', height: '40px', background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))'}}>
-            <span className="fw-bold small">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
-            </span>
-          </div>
-          <div className="flex-grow-1 overflow-hidden">
-            <div className="small fw-bold text-white text-truncate">{user?.name || 'Admin User'}</div>
-            <div className="small text-muted text-truncate" style={{fontSize: '0.75rem'}}>View Profile</div>
-          </div>
-          <button onClick={logout} className="btn btn-link text-secondary p-0 hover-text-white transition-colors" title="Logout">
-            <i className="fas fa-sign-out-alt"></i>
-          </button>
-        </div>
+        { user ? (
+            <div className="user-profile d-flex align-items-center gap-3 cursor-pointer">
+                <div className="rounded-circle d-flex align-items-center justify-content-center shadow-sm text-white" style={{width: '40px', height: '40px', background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))'}}>
+                    <span className="fw-bold small">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                    </span>
+                </div>
+                <div className="flex-grow-1 overflow-hidden">
+                    <div className="small fw-bold text-white text-truncate">{user?.name || 'Admin User'}</div>
+                    <div className="small text-muted text-truncate" style={{fontSize: '0.75rem'}}>View Profile</div>
+                </div>
+                <button onClick={logout} className="btn btn-link text-secondary p-0 hover-text-white transition-colors" title="Logout">
+                    <i className="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        ) : (
+            <div className="text-center">
+                <Nav.Link as={NavLink} to="/login" className="btn btn-primary btn-sm w-100 mb-2">
+                    Login
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="/register" className="btn btn-outline-light btn-sm w-100">
+                    Register
+                </Nav.Link>
+            </div>
+        )}
       </div>
     </div>
   );

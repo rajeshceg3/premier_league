@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Table, Button, Spinner, Card, Modal, InputGroup, Form } from 'react-bootstrap';
 import apiClient from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const AgentList = () => {
+  const { user } = useAuth();
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,11 +70,13 @@ const AgentList = () => {
            <p className="text-muted mb-0">Manage registered agents and their contact details.</p>
         </div>
         <div className="mt-3 mt-md-0">
-          <Link to="/agents/new">
-            <Button variant="warning" className="shadow-sm text-white">
-              <i className="fas fa-plus me-2"></i> Register Agent
-            </Button>
-          </Link>
+            { user && (
+                <Link to="/agents/new">
+                    <Button variant="warning" className="shadow-sm text-white">
+                    <i className="fas fa-plus me-2"></i> Register Agent
+                    </Button>
+                </Link>
+            )}
         </div>
       </div>
 

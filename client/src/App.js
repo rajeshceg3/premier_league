@@ -146,29 +146,29 @@ function AppContent() {
 
         <Layout>
           <Routes>
-            <Route path="/login" element={!user ? <LoginForm /> : <Navigate to="/dashboard" />} />
-            <Route path="/register" element={!user ? <RegistrationForm /> : <Navigate to="/dashboard" />} />
+            <Route path="/login" element={!user ? <LoginForm /> : <Navigate to="/loans" />} />
+            <Route path="/register" element={!user ? <RegistrationForm /> : <Navigate to="/loans" />} />
 
             <Route path="/watchlist" element={<ProtectedRoute><WatchlistPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
-            <Route path="/players" element={<ProtectedRoute><PlayerList /></ProtectedRoute>} />
+            <Route path="/players" element={<PlayerList />} />
             <Route path="/players/new" element={<ProtectedRoute><PlayerForm /></ProtectedRoute>} />
             <Route path="/players/edit/:id" element={<ProtectedRoute><PlayerForm /></ProtectedRoute>} />
 
-            <Route path="/teams" element={<ProtectedRoute><TeamList /></ProtectedRoute>} />
+            <Route path="/teams" element={<TeamList />} />
             <Route path="/teams/new" element={<ProtectedRoute><TeamForm /></ProtectedRoute>} />
             <Route path="/teams/edit/:id" element={<ProtectedRoute><TeamForm /></ProtectedRoute>} />
 
-            <Route path="/agents" element={<ProtectedRoute><AgentList /></ProtectedRoute>} />
+            <Route path="/agents" element={<AgentList />} />
             <Route path="/agents/new" element={<ProtectedRoute><AgentForm /></ProtectedRoute>} />
             <Route path="/agents/edit/:id" element={<ProtectedRoute><AgentForm /></ProtectedRoute>} />
 
-            <Route path="/loans" element={<ProtectedRoute><LoanList /></ProtectedRoute>} />
+            <Route path="/loans" element={<LoanList />} />
             <Route path="/loans/new" element={<ProtectedRoute><LoanForm /></ProtectedRoute>} />
             <Route path="/loans/edit/:id" element={<ProtectedRoute><LoanForm /></ProtectedRoute>} />
 
-            <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+            <Route path="/" element={<Navigate to="/loans" />} />
           </Routes>
         </Layout>
       </>
