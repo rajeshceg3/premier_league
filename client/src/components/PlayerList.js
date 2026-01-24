@@ -4,8 +4,10 @@ import { toast } from 'react-toastify';
 import { Table, Button, Spinner, Card, Row, Col, Modal, Form, InputGroup } from 'react-bootstrap';
 import apiClient, { getWatchlist } from '../services/apiClient';
 import AddToWatchlistButton from './AddToWatchlistButton';
+import { useAuth } from '../context/AuthContext';
 
 const PlayerList = () => {
+  const { user } = useAuth();
   const [players, setPlayers] = useState([]);
   const [filteredPlayers, setFilteredPlayers] = useState([]);
   const [userWatchlistIds, setUserWatchlistIds] = useState(new Set());
@@ -82,11 +84,13 @@ const PlayerList = () => {
            <p className="text-muted mb-0">Manage player profiles and details.</p>
         </div>
         <div className="d-flex gap-2 mt-3 mt-md-0">
-          <Link to="/players/new">
-            <Button variant="primary" className="shadow-sm">
-              <i className="fas fa-plus me-2"></i> Add Player
-            </Button>
-          </Link>
+            { user && (
+                <Link to="/players/new">
+                    <Button variant="primary" className="shadow-sm">
+                    <i className="fas fa-plus me-2"></i> Add Player
+                    </Button>
+                </Link>
+            )}
         </div>
       </div>
 
@@ -146,26 +150,28 @@ const PlayerList = () => {
                       <td className="py-3"><span className="badge bg-light text-dark border">{player.position}</span></td>
                       <td className="py-3 text-muted font-monospace">#{player.jerseyNumber}</td>
                       <td className="pe-4 py-3 text-end">
-                        <div className="d-flex justify-content-end gap-2">
-                          <AddToWatchlistButton
-                            playerId={player._id}
-                            isInitiallyWatched={userWatchlistIds.has(player._id)}
-                          />
-                          <Link to={`/players/edit/${player._id}`}>
-                            <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
-                              <i className="fas fa-edit"></i>
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="light"
-                            size="sm"
-                            className="text-danger hover-danger"
-                            onClick={() => confirmDelete(player)}
-                            title="Delete"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </Button>
-                        </div>
+                        { user && (
+                            <div className="d-flex justify-content-end gap-2">
+                                <AddToWatchlistButton
+                                    playerId={player._id}
+                                    isInitiallyWatched={userWatchlistIds.has(player._id)}
+                                />
+                                <Link to={`/players/edit/${player._id}`}>
+                                    <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
+                                    <i className="fas fa-edit"></i>
+                                    </Button>
+                                </Link>
+                                <Button
+                                    variant="light"
+                                    size="sm"
+                                    className="text-danger hover-danger"
+                                    onClick={() => confirmDelete(player)}
+                                    title="Delete"
+                                >
+                                    <i className="fas fa-trash"></i>
+                                </Button>
+                            </div>
+                        )}
                       </td>
                     </tr>
                   ))}

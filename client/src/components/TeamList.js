@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Table, Button, Spinner, Card, Modal, InputGroup, Form } from 'react-bootstrap';
 import apiClient from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const TeamList = () => {
+  const { user } = useAuth();
   const [teams, setTeams] = useState([]);
   const [filteredTeams, setFilteredTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,11 +70,13 @@ const TeamList = () => {
            <p className="text-muted mb-0">Manage football clubs and coaching staff.</p>
         </div>
         <div className="mt-3 mt-md-0">
-          <Link to="/teams/new">
-            <Button variant="primary" className="shadow-sm">
-              <i className="fas fa-plus me-2"></i> Register Team
-            </Button>
-          </Link>
+            { user && (
+                <Link to="/teams/new">
+                    <Button variant="primary" className="shadow-sm">
+                    <i className="fas fa-plus me-2"></i> Register Team
+                    </Button>
+                </Link>
+            )}
         </div>
       </div>
 
@@ -133,23 +137,25 @@ const TeamList = () => {
                         {team.coach}
                       </td>
                       <td className="pe-4 py-3 text-end">
-                        <div className="d-flex justify-content-end gap-2">
-                          <Link to={`/teams/edit/${team._id}`}>
-                            <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
-                              <i className="fas fa-edit"></i>
-                            </Button>
-                          </Link>
+                        { user && (
+                            <div className="d-flex justify-content-end gap-2">
+                                <Link to={`/teams/edit/${team._id}`}>
+                                    <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
+                                    <i className="fas fa-edit"></i>
+                                    </Button>
+                                </Link>
 
-                          <Button
-                            variant="light"
-                            size="sm"
-                            className="text-danger hover-danger"
-                            onClick={() => confirmDelete(team)}
-                            title="Delete"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </Button>
-                        </div>
+                                <Button
+                                    variant="light"
+                                    size="sm"
+                                    className="text-danger hover-danger"
+                                    onClick={() => confirmDelete(team)}
+                                    title="Delete"
+                                >
+                                    <i className="fas fa-trash"></i>
+                                </Button>
+                            </div>
+                        )}
                       </td>
                     </tr>
                   ))}
