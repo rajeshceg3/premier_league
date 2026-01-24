@@ -50,9 +50,9 @@ const Sidebar = () => {
       </Nav>
 
       <div className="mt-auto">
-        <div className="user-profile d-flex align-items-center gap-3">
-          <div className="bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{width: '36px', height: '36px', background: 'var(--primary-500)'}}>
-            <span className="fw-bold text-white small">
+        <div className="user-profile d-flex align-items-center gap-3 cursor-pointer">
+          <div className="rounded-circle d-flex align-items-center justify-content-center shadow-sm text-white" style={{width: '40px', height: '40px', background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))'}}>
+            <span className="fw-bold small">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
             </span>
           </div>
