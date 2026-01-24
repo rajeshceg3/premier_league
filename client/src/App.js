@@ -58,9 +58,9 @@ const Layout = ({ children }) => {
             placement="end"
             show={showMobileMenu}
             onHide={() => setShowMobileMenu(false)}
-            style={{ backgroundColor: 'var(--slate-900)', color: 'white' }}
+            className="mobile-offcanvas"
           >
-            <Offcanvas.Header closeButton closeVariant="white" className="border-bottom border-secondary border-opacity-25">
+            <Offcanvas.Header closeButton closeVariant="white">
               <Offcanvas.Title id="mobile-menu-label" className="font-montserrat fw-bold d-flex align-items-center gap-2">
                  <i className="fas fa-futbol text-primary"></i> PL Loans
               </Offcanvas.Title>

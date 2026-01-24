@@ -63,7 +63,8 @@ describe('LoanList Component', () => {
 
     await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
 
-    expect(await screen.findByText('Harry Kane')).toBeInTheDocument();
+    const names = await screen.findAllByText('Harry Kane');
+    expect(names.length).toBeGreaterThan(0);
   });
 
   test('handles delete action via Modal', async () => {
@@ -76,11 +77,12 @@ describe('LoanList Component', () => {
       </BrowserRouter>
     );
 
-    expect(await screen.findByText('Harry Kane')).toBeInTheDocument();
+    const names = await screen.findAllByText('Harry Kane');
+    expect(names.length).toBeGreaterThan(0);
 
-    // Click Delete button on the row
-    const deleteBtn = screen.getByTitle('Delete');
-    fireEvent.click(deleteBtn);
+    // Click Delete button on the row (desktop view likely first, but we just need one)
+    const deleteBtns = screen.getAllByTitle('Delete');
+    fireEvent.click(deleteBtns[0]);
 
     // Modal should appear
     expect(await screen.findByText('Confirm Deletion')).toBeInTheDocument();
