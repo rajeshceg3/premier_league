@@ -9,7 +9,8 @@
     "test:e2e": "playwright test",
     "lint": "eslint . --config backend.eslint.config.mjs",
     "lint:fix": "eslint . --config backend.eslint.config.mjs --fix",
-    "format": "prettier --write '**/*.js'"
+    "format": "prettier --write '**/*.js'",
+    "seed": "node scripts/seed.js"
   },
   "repository": {
     "type": "git",
