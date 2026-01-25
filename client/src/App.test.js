@@ -14,10 +14,8 @@ jest.mock('./context/AuthContext', () => ({
 }));
 
 test('renders login page title', () => {
+  window.history.pushState({}, 'Login page', '/login');
   render(<App />);
-  // Assuming the login page is the default for unauthenticated users
-  // and it has a "Sign In" or "Login" text.
-  // The polished LoginForm has "Welcome Back"
   const welcomeElement = screen.getByText(/Welcome Back/i);
   expect(welcomeElement).toBeInTheDocument();
 });
