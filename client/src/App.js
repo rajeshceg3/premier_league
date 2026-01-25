@@ -41,14 +41,14 @@ const Layout = ({ children }) => {
       {/* Main Content Area */}
       <div className="content-wrapper">
         {/* Mobile Navbar - visible only on mobile */}
-        <Navbar expand={false} className="d-lg-none glass-panel sticky-top px-3 py-2 border-0 rounded-0">
+        <Navbar expand={false} className="d-lg-none glass-panel sticky-top px-3 py-2 border-0 rounded-0 shadow-sm blur-backdrop">
           <Navbar.Brand as={NavLink} to="/" className="fw-bold font-montserrat text-dark d-flex align-items-center gap-2">
-             <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{width: '32px', height: '32px'}}>
+             <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-primary-sm" style={{width: '32px', height: '32px'}}>
                 <i className="fas fa-futbol small"></i>
              </div>
-             <span className="text-secondary">PL Loans</span>
+             <span className="text-secondary tracking-wide">PL Loans</span>
           </Navbar.Brand>
-          <Navbar.Toggle aria-controls="mobile-menu" onClick={() => setShowMobileMenu(true)} className="border-0 p-1 text-primary">
+          <Navbar.Toggle aria-controls="mobile-menu" onClick={() => setShowMobileMenu(true)} className="border-0 p-1 text-primary hover-scale">
              <i className="fas fa-bars fa-lg"></i>
           </Navbar.Toggle>
 
@@ -58,22 +58,22 @@ const Layout = ({ children }) => {
             placement="end"
             show={showMobileMenu}
             onHide={() => setShowMobileMenu(false)}
-            className="mobile-offcanvas"
+            className="mobile-offcanvas border-start border-white border-opacity-10"
           >
-            <Offcanvas.Header closeButton closeVariant="white">
-              <Offcanvas.Title id="mobile-menu-label" className="font-montserrat fw-bold d-flex align-items-center gap-2">
+            <Offcanvas.Header closeButton closeVariant="white" className="border-bottom border-white border-opacity-10">
+              <Offcanvas.Title id="mobile-menu-label" className="font-montserrat fw-bold d-flex align-items-center gap-2 text-white">
                  <i className="fas fa-futbol text-primary"></i> PL Loans
               </Offcanvas.Title>
             </Offcanvas.Header>
-            <Offcanvas.Body className="p-0">
+            <Offcanvas.Body className="p-0 bg-gradient-dark">
                <div className="d-flex flex-column h-100">
-                   <Nav className="flex-column p-3">
+                   <Nav className="flex-column p-3 w-100">
                       <Nav.Link as={NavLink} to="/dashboard" onClick={() => setShowMobileMenu(false)} className="sidebar-link">
                         <i className="fas fa-chart-line"></i>
                         <span className="ms-3">Dashboard</span>
                       </Nav.Link>
 
-                      <div className="sidebar-heading mt-3">Entities</div>
+                      <div className="sidebar-heading mt-4 mb-2">Entities</div>
 
                       <Nav.Link as={NavLink} to="/players" onClick={() => setShowMobileMenu(false)} className="sidebar-link">
                         <i className="fas fa-users"></i>
@@ -92,7 +92,7 @@ const Layout = ({ children }) => {
                         <span className="ms-3">Loans</span>
                       </Nav.Link>
 
-                      <div className="sidebar-heading mt-3">Tools</div>
+                      <div className="sidebar-heading mt-4 mb-2">Tools</div>
 
                       <Nav.Link as={NavLink} to="/watchlist" onClick={() => setShowMobileMenu(false)} className="sidebar-link">
                         <i className="fas fa-star"></i>
@@ -100,14 +100,14 @@ const Layout = ({ children }) => {
                       </Nav.Link>
                    </Nav>
 
-                   <div className="mt-auto p-3 border-top border-secondary border-opacity-25">
+                   <div className="mt-auto p-4 border-top border-white border-opacity-10 bg-black bg-opacity-25">
                       <div className="d-flex align-items-center gap-3 text-white-50">
-                        <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm text-white" style={{width: '40px', height: '40px'}}>
+                        <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center shadow-lg text-white" style={{width: '42px', height: '42px'}}>
                           {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
                         </div>
                         <div>
                           <div className="fw-bold text-white">{user?.name || 'Admin User'}</div>
-                          <button onClick={() => { setShowMobileMenu(false); logout(); }} className="btn btn-link p-0 text-danger text-decoration-none small">
+                          <button onClick={() => { setShowMobileMenu(false); logout(); }} className="btn btn-link p-0 text-danger text-decoration-none small fw-bold">
                             Sign Out
                           </button>
                         </div>

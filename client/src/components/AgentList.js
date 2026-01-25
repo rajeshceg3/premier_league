@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Table, Button, Spinner, Card, Modal, InputGroup, Form } from 'react-bootstrap';
+import { Table, Button, Spinner, Card, Modal, InputGroup, Form, Row, Col } from 'react-bootstrap';
 import apiClient from '../services/apiClient';
 import { useAuth } from '../context/AuthContext';
 
@@ -80,7 +80,7 @@ const AgentList = () => {
         </div>
       </div>
 
-       <Card className="border-0 shadow-sm mb-4">
+       <Card className="border-0 shadow-sm mb-4 glass-panel">
         <Card.Body className="p-3">
              <InputGroup>
                 <InputGroup.Text className="bg-white border-end-0">
@@ -97,83 +97,129 @@ const AgentList = () => {
         </Card.Body>
       </Card>
 
-      <Card className="border-0 shadow-sm">
-        <Card.Body className="p-0">
-          {loading ? (
-            <div className="d-flex justify-content-center py-5">
-              <Spinner animation="border" role="status" variant="warning">
-                <span className="visually-hidden">Loading...</span>
-              </Spinner>
-            </div>
-          ) : filteredAgents.length === 0 ? (
-            <div className="text-center py-5">
-              <div className="mb-3 text-muted"><i className="fas fa-user-tie fa-3x"></i></div>
-              <p className="text-muted">No agents found.</p>
-               {searchTerm && <Button variant="link" onClick={() => setSearchTerm('')}>Clear Search</Button>}
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <Table hover className="align-middle mb-0 table-borderless">
-                <thead className="bg-light text-secondary border-bottom">
-                  <tr>
-                    <th className="ps-4 py-3 text-uppercase small fw-bold">Agent Name</th>
-                    <th className="py-3 text-uppercase small fw-bold">Contact Info</th>
-                    <th className="pe-4 py-3 text-uppercase small fw-bold text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAgents.map(agent => (
-                    <tr key={agent._id} className="border-bottom">
-                      <td className="ps-4 py-3">
-                        <div className="d-flex align-items-center">
-                            <div className="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center me-3" style={{width: '40px', height: '40px'}}>
-                                <span className="fw-bold">{agent.name.charAt(0)}</span>
-                            </div>
-                            <span className="fw-bold text-dark">{agent.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-3">
-                         <div className="d-flex flex-column">
-                            <a href={`mailto:${agent.email}`} className="text-decoration-none text-muted mb-1 hover-primary">
-                                <i className="far fa-envelope me-2 small"></i>{agent.email}
-                            </a>
-                            {agent.phone && (
-                                <span className="text-muted small">
-                                    <i className="fas fa-phone me-2 small"></i>{agent.phone}
-                                </span>
-                            )}
-                         </div>
-                      </td>
-                      <td className="pe-4 py-3 text-end">
-                        <div className="d-flex justify-content-end gap-2">
-                          <Link to={`/agents/edit/${agent._id}`}>
-                            <Button variant="light" size="sm" className="text-secondary hover-primary" title="Edit">
-                              <i className="fas fa-edit"></i>
-                            </Button>
-                          </Link>
+      {loading ? (
+        <div className="d-flex justify-content-center py-5">
+            <Spinner animation="border" role="status" variant="warning">
+            <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </div>
+      ) : filteredAgents.length === 0 ? (
+        <Card className="border-0 shadow-sm text-center py-5">
+            <Card.Body>
+                <div className="mb-3 text-muted opacity-50"><i className="fas fa-user-tie fa-4x"></i></div>
+                <h5 className="fw-bold text-dark">No Agents Found</h5>
+                <p className="text-muted">No agents match your search criteria.</p>
+                {searchTerm && <Button variant="link" onClick={() => setSearchTerm('')}>Clear Search</Button>}
+            </Card.Body>
+        </Card>
+      ) : (
+        <>
+            {/* Desktop View */}
+            <div className="d-none d-md-block">
+                <Card className="border-0 shadow-sm overflow-hidden">
+                    <Table hover className="align-middle mb-0 table-borderless">
+                        <thead className="bg-light text-secondary border-bottom">
+                        <tr>
+                            <th className="ps-4 py-3 text-uppercase small fw-bold tracking-wide">Agent Name</th>
+                            <th className="py-3 text-uppercase small fw-bold tracking-wide">Contact Info</th>
+                            <th className="pe-4 py-3 text-uppercase small fw-bold tracking-wide text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {filteredAgents.map(agent => (
+                            <tr key={agent._id} className="border-bottom hover-bg-slate-50 transition-colors">
+                            <td className="ps-4 py-3">
+                                <div className="d-flex align-items-center">
+                                    <div className="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style={{width: '40px', height: '40px'}}>
+                                        <span className="fw-bold">{agent.name.charAt(0)}</span>
+                                    </div>
+                                    <span className="fw-bold text-dark">{agent.name}</span>
+                                </div>
+                            </td>
+                            <td className="py-3">
+                                <div className="d-flex flex-column small">
+                                    <a href={`mailto:${agent.email}`} className="text-decoration-none text-muted mb-1 hover-primary">
+                                        <i className="far fa-envelope me-2 w-4 text-center"></i>{agent.email}
+                                    </a>
+                                    {agent.phone && (
+                                        <span className="text-muted">
+                                            <i className="fas fa-phone me-2 w-4 text-center"></i>{agent.phone}
+                                        </span>
+                                    )}
+                                </div>
+                            </td>
+                            <td className="pe-4 py-3 text-end">
+                                <div className="d-flex justify-content-end gap-2 opacity-75 hover-opacity-100">
+                                    <Link to={`/agents/edit/${agent._id}`}>
+                                        <Button variant="light" size="sm" className="btn-icon rounded-circle shadow-sm" title="Edit">
+                                        <i className="fas fa-pencil-alt text-secondary"></i>
+                                        </Button>
+                                    </Link>
 
-                          <Button
-                            variant="light"
-                            size="sm"
-                            className="text-danger hover-danger"
-                            onClick={() => confirmDelete(agent)}
-                            title="Delete"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+                                    <Button
+                                        variant="light"
+                                        size="sm"
+                                        className="btn-icon rounded-circle shadow-sm"
+                                        onClick={() => confirmDelete(agent)}
+                                        title="Delete"
+                                    >
+                                        <i className="fas fa-trash-alt text-danger"></i>
+                                    </Button>
+                                </div>
+                            </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </Table>
+                </Card>
             </div>
-          )}
-        </Card.Body>
-      </Card>
+
+            {/* Mobile View */}
+            <div className="d-md-none">
+                <Row className="g-3">
+                    {filteredAgents.map(agent => (
+                        <Col xs={12} key={agent._id}>
+                            <Card className="border-0 shadow-sm rounded-xl overflow-hidden card-hover">
+                                <Card.Body className="p-4">
+                                    <div className="d-flex align-items-center mb-3">
+                                        <div className="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style={{width: '48px', height: '48px'}}>
+                                            <span className="fw-bold fs-5">{agent.name.charAt(0)}</span>
+                                        </div>
+                                        <div className="fw-bold text-dark fs-5">{agent.name}</div>
+                                    </div>
+
+                                    <div className="bg-slate-50 rounded p-3 mb-3">
+                                        <div className="d-flex align-items-center mb-2">
+                                            <i className="far fa-envelope text-muted me-3"></i>
+                                            <a href={`mailto:${agent.email}`} className="text-dark fw-medium text-decoration-none text-truncate d-block" style={{maxWidth: '200px'}}>{agent.email}</a>
+                                        </div>
+                                        {agent.phone && (
+                                            <div className="d-flex align-items-center">
+                                                <i className="fas fa-phone text-muted me-3"></i>
+                                                <span className="text-dark fw-medium">{agent.phone}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="d-grid gap-2 d-flex justify-content-end">
+                                        <Link to={`/agents/edit/${agent._id}`} className="flex-grow-1">
+                                            <Button variant="light" className="w-100 border">Edit</Button>
+                                        </Link>
+                                        <Button variant="outline-danger" className="flex-grow-0" onClick={() => confirmDelete(agent)}>
+                                            <i className="fas fa-trash-alt"></i>
+                                        </Button>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+            </div>
+        </>
+      )}
 
       {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered backdrop="static">
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered backdrop="static" contentClassName="border-0 shadow-lg rounded-2xl">
         <Modal.Header closeButton className="border-0 pb-0">
           <Modal.Title className="h5 fw-bold text-danger">Confirm Deletion</Modal.Title>
         </Modal.Header>
@@ -181,11 +227,11 @@ const AgentList = () => {
           <p>Are you sure you want to delete agent <strong>{agentToDelete?.name}</strong>?</p>
           <p className="small text-muted mb-0">This action cannot be undone.</p>
         </Modal.Body>
-        <Modal.Footer className="border-0 pt-0">
-          <Button variant="light" onClick={() => setShowDeleteModal(false)}>
+        <Modal.Footer className="border-0 pt-0 pb-3 pe-4">
+          <Button variant="light" onClick={() => setShowDeleteModal(false)} className="rounded-pill px-4">
             Cancel
           </Button>
-          <Button variant="danger" onClick={executeDelete}>
+          <Button variant="danger" onClick={executeDelete} className="rounded-pill px-4 shadow-sm">
             <i className="fas fa-trash me-2"></i>Delete Agent
           </Button>
         </Modal.Footer>
