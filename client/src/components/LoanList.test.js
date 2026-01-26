@@ -13,6 +13,12 @@ jest.mock('react-toastify', () => ({
     error: jest.fn(),
   },
 }));
+jest.mock('../context/AuthContext', () => ({
+  useAuth: () => ({
+    user: { name: 'Test User', isAdmin: true },
+    loading: false
+  })
+}));
 
 // Mock data
 const mockLoans = [

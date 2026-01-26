@@ -307,3 +307,78 @@ h1, h2, h3, h4, h5, h6 {
   border: 2px solid var(--slate-50);
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }
+
+/* --- Skeleton Loading Animation --- */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.skeleton-text {
+  height: 0.8em;
+  width: 100%;
+  margin-bottom: 0.5em;
+  border-radius: var(--radius-pill);
+}
+
+.skeleton-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.skeleton-block {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-md);
+}
+
+/* --- New Polish Utilities --- */
+.glass-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-sm);
+}
+
+.hover-scale {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-lift-sm {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s;
+}
+.hover-lift-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  z-index: 1;
+  position: relative;
+}
+
+.active-glow {
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+}
+
+/* Refined Card for Mobile Lists */
+.card-slick {
+  border: 1px solid var(--slate-100);
+  background: white;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.card-slick:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: var(--primary-200);
+}

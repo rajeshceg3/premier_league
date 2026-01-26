@@ -96,9 +96,9 @@
 .sidebar-link.active {
   background: linear-gradient(90deg, var(--primary-600), var(--primary-500));
   color: white !important;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
   transform: translateX(4px);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
 .sidebar-link.active::before {
@@ -226,9 +226,11 @@
 
 /* --- Mobile Offcanvas Customization --- */
 .mobile-offcanvas {
-    background: linear-gradient(180deg, var(--slate-900) 0%, #020617 100%) !important;
-    color: var(--slate-300) !important;
-    border-left: 1px solid rgba(255,255,255,0.05) !important;
+  background:
+    radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), transparent 40%),
+    linear-gradient(180deg, var(--slate-900) 0%, #020617 100%) !important;
+  color: var(--slate-300) !important;
+  border-left: 1px solid rgba(255,255,255,0.05) !important;
 }
 
 .mobile-offcanvas .offcanvas-header {
